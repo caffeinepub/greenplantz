@@ -83,12 +83,14 @@ actor {
     subcategories : [CategoryWithSubcategories];
   };
 
-  let accessControlState = AccessControl.initState();
+  stable var initialized = false;
+
+  var accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  var nextCategoryId = 0;
-  var nextProductId = 0;
-  var nextGardenCenterId = 0;
+  stable var nextCategoryId = 0;
+  stable var nextProductId = 0;
+  stable var nextGardenCenterId = 0;
 
   let categories = Map.empty<CategoryId, Category>();
   let products = Map.empty<ProductId, Product>();

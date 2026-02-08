@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 35,
+  "projectStateVersion": 37,
   "summary": "Build a website and mobile app for GreenPlantz, an online store selling garden products and plants, with separate role-based logins for GreenPlantz team admins, Garden Nursery owners/teams, and Customers, including nursery-level management capabilities.",
   "architectural_notes": [
     "Introduce RBAC with distinct roles (GreenPlantz admin, nursery owner/team, customer) and permissions for product/nursery management and account disabling/removal.",
@@ -19,9 +19,10 @@
     "Branding regression: deployed build does not reflect the updated logo (user reports the logo has not changed after deployment).",
     "Header logo sizing is not correct; needs adjustment to the required dimensions/responsive display.",
     "Broken header logo: SiteHeader references /assets/generated/greenplantz-header-logo.dim_504x112.cb_20260208_01.png but the corresponding /public/assets/generated folder (and file) is missing, causing a broken-image icon in the deployed UI.",
-    "Logo issue persists after latest build/deploy attempt (user reports it is still not corrected)."
+    "Logo issue persists after latest build/deploy attempt (user reports it is still not corrected).",
+    "Backend platform-admin allowlist is likely not being updated/persisted on deploy; Principals remain non-admin until grantAdminAccess/addPlatformAdmin is executed against the deployed canister."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-a-greenplantz-storefront-web-app-that-is-fully-responsive-mobile-first-and-functions-as-the-website-and-app-experience-single-react-app-with-layouts-optimized-for-desktop-tablet-and-phone",
@@ -586,6 +587,30 @@
       "summary": "Add the Internet Identity Principal ID \"7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae\" to the backend platform-admin allowlist so this principal is recognized as a Platform Admin (isPlatformAdmin = true) and can access the Team/Admin portal admin screens after signing in.",
       "reqIds": [
         "REQ-54"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-51",
+      "summary": "Ensure the backend recognizes these Internet Identity principals as Platform Admins by bootstrapping them into the admin allowlist during canister initialization and after upgrades (post-upgrade):\n- b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe\n- 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-52",
+      "summary": "Persist the platform-admin allowlist (AccessControl state) across canister upgrades so that admin access does not revert or get lost after redeployments/upgrades.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-53",
+      "summary": "If implementing REQ-56 requires a state schema change (e.g., adding stable state for AccessControl), add a conditional Motoko migration (backend/migration.mo) that safely preserves existing app data and initializes any new stable fields without trapping.",
+      "reqIds": [
+        "REQ-57"
       ],
       "status": "pending"
     }

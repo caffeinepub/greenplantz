@@ -1,18 +1,32 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T19:10:04.483Z",
+  "generatedAt": "2026-02-08T19:20:31.078Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
+    "total": 3,
     "implemented": 0,
     "items": [
       {
-        "id": "REQ-54",
-        "summary": "Add the Internet Identity Principal ID \"7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae\" to the backend platform-admin allowlist so this principal is recognized as a Platform Admin (isPlatformAdmin = true) and can access the Team/Admin portal admin screens after signing in.",
+        "id": "REQ-55",
+        "summary": "Ensure the backend recognizes these Internet Identity principals as Platform Admins by bootstrapping them into the admin allowlist during canister initialization and after upgrades (post-upgrade):\n- b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe\n- 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-56",
+        "summary": "Persist the platform-admin allowlist (AccessControl state) across canister upgrades so that admin access does not revert or get lost after redeployments/upgrades.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-57",
+        "summary": "If implementing REQ-56 requires a state schema change (e.g., adding stable state for AccessControl), add a conditional Motoko migration (backend/migration.mo) that safely preserves existing app data and initializes any new stable fields without trapping.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []

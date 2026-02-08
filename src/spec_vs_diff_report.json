@@ -1,19 +1,43 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T19:10:04.480Z",
-  "summary": "The diff does not show the requested principal ID being added to the platform-admin allowlist; the backend changes shown only reference AccessControl.isAdmin without any visible update to the allowlist contents.",
+  "generatedAt": "2026-02-08T19:20:31.074Z",
+  "summary": "The diff shows minor backend authorization wiring (an `accessControlState` variable initialized with `AccessControl.initState()` and mixed in via `MixinAuthorization`) but does not provide evidence of (a) bootstrapping the specified platform-admin principals on init/post-upgrade, (b) persisting the admin allowlist across upgrades via stable state, or (c) adding a migration. Additionally, `project_state.json` was modified though it is not part of the requested backend fix.",
   "missing_requirements": [
     {
-      "id": "REQ-54",
-      "requirement": "Add the Internet Identity Principal ID \"7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae\" to the backend platform-admin allowlist so this principal is recognized as a Platform Admin (isPlatformAdmin = true).",
-      "reason": "In the provided/truncated backend diff, there is no evidence of this principal being inserted into the admin allowlist or any initialization/migration logic that adds it; only a call to `AccessControl.isAdmin(accessControlState, caller)` is shown.",
+      "id": "REQ-55",
+      "requirement": "Bootstrap the two specified Internet Identity principals into the platform-admin allowlist during canister initialization and after upgrades (post-upgrade) so they are recognized as Platform Admins.",
+      "reason": "In the provided `backend/main.mo` diff excerpt there is no evidence of initialization logic that inserts the two listed principals into the allowlist, nor any `init`/`postupgrade` hook that re-applies the bootstrap after upgrades.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-56",
+      "requirement": "Persist the platform-admin allowlist (AccessControl state) across canister upgrades so admin access does not get lost after redeployments/upgrades.",
+      "reason": "The diff shows `var accessControlState = AccessControl.initState();` (non-stable) and does not show any stable storage or preupgrade/postupgrade serialization for AccessControl state; thus persistence across upgrades is not evidenced.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-57",
+      "requirement": "If REQ-56 requires a state schema change, add a conditional Motoko migration (backend/migration.mo) that preserves existing data and initializes new stable fields without trapping.",
+      "reason": "No new `backend/migration.mo` file was added and no migration logic is shown in the diff summary; therefore there is no evidence of a conditional migration for any new stable fields related to admin allowlist persistence.",
+      "evidence": [
+        "backend/main.mo"
       ]
     }
   ],
-  "hallucinated_features": [],
+  "hallucinated_features": [
+    {
+      "description": "Modified `project_state.json` (project metadata/state) unrelated to platform-admin allowlist persistence/bootstrapping requirements.",
+      "reason": "The BuildRequest is specifically about backend allowlist persistence and bootstrapping admin principals; it does not request changes to project metadata/state files.",
+      "evidence": [
+        "project_state.json"
+      ]
+    }
+  ],
   "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",

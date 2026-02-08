@@ -1,10 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Allowlist an additional Internet Identity Principal ID as a Platform Admin so they can access admin-only portal screens.
+**Goal:** Fix Platform Admin access so specified principals are recognized as admins, and ensure the platform-admin allowlist persists across canister upgrades.
 
 **Planned changes:**
-- Add Principal ID `7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae` to the backend platform-admin allowlist in `backend/main.mo`.
-- Ensure existing platform-admin allowlist entries remain unchanged.
+- Bootstrap the specified Internet Identity principals into the platform-admin allowlist during canister initialization and after upgrades (post-upgrade).
+- Persist AccessControl / platform-admin allowlist state across upgrades so existing admin grants/revocations are not lost.
+- Add a safe, conditional Motoko migration (if required by the persistence change) to preserve existing app data and initialize any new stable fields without trapping.
 
-**User-visible outcome:** After deployment, signing in with the specified Principal ID is recognized as a Platform Admin (`isPlatformAdmin = true`), allowing access to Team/Admin portal pages guarded by platform-admin checks.
+**User-visible outcome:** The specified principals can access the Team/Admin portal as Platform Admins (redirecting to `/admin/nurseries` instead of showing Access Denied), and admin access remains intact after redeployments/upgrades.

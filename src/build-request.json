@@ -1,48 +1,76 @@
 {
   "kind": "build_request",
-  "title": "Allowlist additional Platform Admin Principal ID",
-  "priority": "normal",
+  "title": "Fix platform-admin allowlist persistence and bootstrap required admin principals",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-54",
-      "text": "Add the Internet Identity Principal ID \"7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae\" to the backend platform-admin allowlist so this principal is recognized as a Platform Admin (isPlatformAdmin = true) and can access the Team/Admin portal admin screens after signing in.",
+      "id": "REQ-55",
+      "text": "Ensure the backend recognizes these Internet Identity principals as Platform Admins by bootstrapping them into the admin allowlist during canister initialization and after upgrades (post-upgrade):\n- b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe\n- 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-10"
         ],
         "quotes": [
-          "also add 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae"
+          "this is the principle id 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae",
+          "yes do it"
         ]
       },
       "acceptanceCriteria": [
-        "After deployment/upgrade, signing in with Principal ID 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae results in getCallerRole().isPlatformAdmin returning true.",
-        "With that principal authenticated, the user can access the Team/Admin portal and load admin-only pages guarded by platform-admin checks (no access denied due to missing allowlist entry).",
-        "No existing platform-admin allowlist entries are removed or altered as part of this change."
+        "After deploying the update, signing in with principal 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae results in getCallerRole().isPlatformAdmin == true.",
+        "After deploying the update, signing in with principal b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe results in getCallerRole().isPlatformAdmin == true.",
+        "The Team/Admin portal (/portal/team) redirects authenticated platform admins to /admin/nurseries instead of showing the Access Denied screen."
+      ]
+    },
+    {
+      "id": "REQ-56",
+      "text": "Persist the platform-admin allowlist (AccessControl state) across canister upgrades so that admin access does not revert or get lost after redeployments/upgrades.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-7"
+        ],
+        "quotes": [
+          "still shows the same"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After an upgrade/redeploy, a principal that was already an admin before the upgrade remains an admin (getCallerRole().isPlatformAdmin stays true for that principal).",
+        "Admin allowlist changes performed via existing backend methods (e.g., grantAdminAccess / revokeAccess) remain effective after subsequent upgrades."
+      ]
+    },
+    {
+      "id": "REQ-57",
+      "text": "If implementing REQ-56 requires a state schema change (e.g., adding stable state for AccessControl), add a conditional Motoko migration (backend/migration.mo) that safely preserves existing app data and initializes any new stable fields without trapping.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-10"
+        ],
+        "quotes": [
+          "yes do it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Upgrading from the current deployed canister version to the updated version completes without trapping.",
+        "Existing non-auth state (categories, products, garden centers, user profiles, orders) remains readable and behaves the same after upgrade.",
+        "New stable fields introduced for admin allowlist persistence are initialized correctly when upgrading from older state that did not have them."
       ]
     }
   ],
   "constraints": [
     "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Use English for any user-facing text."
+    "Use English for any user-facing text.",
+    "Do not edit files under frontend immutable paths (as defined by SYSTEM_CONTEXT)."
   ],
   "nonGoals": [
-    "Implementing the admin order authorization/assignment workflow.",
-    "Adding or changing customer profile fields.",
-    "Updating branding/logo assets or header/footer UI."
+    "Adding new roles/permissions beyond fixing platform-admin allowlist behavior.",
+    "Changing Team Portal UI/wording beyond what is necessary to verify and unblock platform-admin access.",
+    "Implementing external authentication providers (only Internet Identity is supported)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

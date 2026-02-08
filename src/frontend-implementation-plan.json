@@ -1,6 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Allowlist additional Platform Admin Principal ID (frontend-only)",
+  "title": "Platform admin allowlist persistence fix (frontend-scope)",
   "requirements": []
 }
