@@ -35,7 +35,14 @@ export function useSearchProducts(searchTerm: string) {
     queryKey: ['products', 'search', searchTerm],
     queryFn: async () => {
       if (!actor || !searchTerm) return [];
-      return actor.searchProducts(searchTerm);
+      // Client-side search fallback since backend doesn't have searchProducts
+      const allProducts = await actor.getActiveProducts();
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      return allProducts.filter(
+        (product) =>
+          product.name.toLowerCase().includes(lowerSearchTerm) ||
+          product.description.toLowerCase().includes(lowerSearchTerm)
+      );
     },
     enabled: !!actor && !actorFetching && searchTerm.length > 0,
   });

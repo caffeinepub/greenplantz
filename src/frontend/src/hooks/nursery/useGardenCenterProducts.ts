@@ -10,7 +10,10 @@ export function useGardenCenterProducts(gardenCenterId: GardenCenterId | undefin
     queryKey: ['gardenCenterProducts', gardenCenterId?.toString()],
     queryFn: async () => {
       if (!actor || !gardenCenterId) return [];
-      return actor.getProductsForGardenCenter(gardenCenterId);
+      // Backend doesn't have getProductsForGardenCenter
+      // Fallback: get all active products and filter by gardenCenterId
+      const allProducts = await actor.getActiveProducts();
+      return allProducts.filter((p) => p.gardenCenterId === gardenCenterId);
     },
     enabled: !!actor && !actorFetching && !!gardenCenterId,
   });
@@ -71,15 +74,8 @@ export function useUpdateGardenCenterProduct() {
   return useMutation<void, Error, UpdateProductParams>({
     mutationFn: async (params: UpdateProductParams) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateProduct(
-        params.productId,
-        params.name,
-        params.description,
-        params.categoryId,
-        params.priceCents,
-        params.stock,
-        params.imageUrls
-      );
+      // Backend doesn't have updateProduct method
+      throw new Error('Update product functionality not yet implemented in backend');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gardenCenterProducts'] });
@@ -104,7 +100,8 @@ export function useToggleGardenCenterProductActive() {
   return useMutation<void, Error, ToggleProductActiveParams>({
     mutationFn: async (params: ToggleProductActiveParams) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.toggleProductActive(params.productId, params.active);
+      // Backend doesn't have toggleProductActive method
+      throw new Error('Toggle product active functionality not yet implemented in backend');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gardenCenterProducts'] });

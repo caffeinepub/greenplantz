@@ -4,21 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useMyGardenCenter } from '../../hooks/nursery/useMyGardenCenter';
 import { useUpdateGardenCenter } from '../../hooks/nursery/useUpdateGardenCenter';
 import { useGardenCenterProducts, useAddGardenCenterProduct, useToggleGardenCenterProductActive } from '../../hooks/nursery/useGardenCenterProducts';
-import { useGetCategories } from '../../hooks/storefront/useCategories';
+import { useGetFullCategoryTaxonomy } from '../../hooks/storefront/useFullCategoryTaxonomy';
+import { getLeafCategories, flattenTaxonomy } from '../../utils/categoryTaxonomy';
 import RequireGardenCenterMember from '../../components/auth/RequireGardenCenterMember';
 import { toast } from 'sonner';
 import { Building2, Package, Plus, X, Image as ImageIcon } from 'lucide-react';
 
 function NurseryDashboardContent() {
   const { data: gardenCenter, isLoading: gcLoading } = useMyGardenCenter();
-  const { data: categories, isLoading: categoriesLoading } = useGetCategories();
+  const { data: taxonomy, isLoading: taxonomyLoading } = useGetFullCategoryTaxonomy();
   const { data: products, isLoading: productsLoading } = useGardenCenterProducts(gardenCenter?.id);
   const { mutate: updateGardenCenter, isPending: isUpdating } = useUpdateGardenCenter();
   const { mutate: addProduct, isPending: isAdding } = useAddGardenCenterProduct();
@@ -36,6 +37,17 @@ function NurseryDashboardContent() {
   const [productImageUrls, setProductImageUrls] = useState<string[]>([]);
   const [currentImageUrl, setCurrentImageUrl] = useState('');
   const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
+
+  // Get leaf categories for product assignment
+  const leafCategories = taxonomy ? getLeafCategories(taxonomy) : [];
+
+  // Group categories by parent for hierarchical display in select
+  const categoryGroups = taxonomy
+    ? taxonomy.map((rootNode) => ({
+        parent: rootNode.category,
+        children: flattenTaxonomy([rootNode]).filter((item) => item.isLeaf),
+      }))
+    : [];
 
   const handleEditGardenCenter = () => {
     if (gardenCenter) {
@@ -240,68 +252,84 @@ function NurseryDashboardContent() {
               </div>
               <Dialog open={addProductDialogOpen} onOpenChange={setAddProductDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button>Add Product</Button>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Product
+                  </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Add New Product</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
+                  <div className="space-y-4 py-4">
                     <div>
-                      <Label htmlFor="productName">Product Name</Label>
+                      <Label htmlFor="productName">Product Name *</Label>
                       <Input
                         id="productName"
                         value={productName}
                         onChange={(e) => setProductName(e.target.value)}
-                        placeholder="e.g., Monstera Deliciosa"
+                        placeholder="Enter product name"
                       />
                     </div>
+
                     <div>
-                      <Label htmlFor="productDescription">Description</Label>
+                      <Label htmlFor="productDescription">Description *</Label>
                       <Textarea
                         id="productDescription"
                         value={productDescription}
                         onChange={(e) => setProductDescription(e.target.value)}
-                        placeholder="Product description..."
+                        placeholder="Enter product description"
                         rows={3}
                       />
                     </div>
+
                     <div>
-                      <Label htmlFor="productCategory">Category</Label>
-                      {categoriesLoading ? (
+                      <Label htmlFor="productCategory">Category *</Label>
+                      {taxonomyLoading ? (
                         <Skeleton className="h-10 w-full" />
                       ) : (
                         <Select value={productCategoryId} onValueChange={setProductCategoryId}>
                           <SelectTrigger id="productCategory">
-                            <SelectValue placeholder="Select category" />
+                            <SelectValue placeholder="Select a category" />
                           </SelectTrigger>
                           <SelectContent>
-                            {categories?.map((cat) => (
-                              <SelectItem key={cat.id.toString()} value={cat.id.toString()}>
-                                {cat.name}
-                              </SelectItem>
+                            {categoryGroups.map((group) => (
+                              <SelectGroup key={group.parent.id.toString()}>
+                                <SelectLabel>{group.parent.name}</SelectLabel>
+                                {group.children.map((item) => (
+                                  <SelectItem
+                                    key={item.category.id.toString()}
+                                    value={item.category.id.toString()}
+                                  >
+                                    {item.indentLabel}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
                             ))}
                           </SelectContent>
                         </Select>
                       )}
                     </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="productPrice">Price ($)</Label>
+                        <Label htmlFor="productPrice">Price (₹) *</Label>
                         <Input
                           id="productPrice"
                           type="number"
                           step="0.01"
+                          min="0"
                           value={productPrice}
                           onChange={(e) => setProductPrice(e.target.value)}
                           placeholder="0.00"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="productStock">Stock</Label>
+                        <Label htmlFor="productStock">Stock *</Label>
                         <Input
                           id="productStock"
                           type="number"
+                          min="0"
                           value={productStock}
                           onChange={(e) => setProductStock(e.target.value)}
                           placeholder="0"
@@ -309,76 +337,68 @@ function NurseryDashboardContent() {
                       </div>
                     </div>
 
-                    {/* Image URLs Section */}
-                    <div className="space-y-3">
+                    <div>
                       <Label>Product Images (Optional)</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={currentImageUrl}
-                          onChange={(e) => setCurrentImageUrl(e.target.value)}
-                          placeholder="Enter image URL"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddImageUrl();
-                            }
-                          }}
-                        />
-                        <Button
-                          type="button"
-                          onClick={handleAddImageUrl}
-                          variant="outline"
-                          size="icon"
-                          disabled={productImageUrls.length >= 5}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      {productImageUrls.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-sm text-muted-foreground">
-                            {productImageUrls.length} image{productImageUrls.length !== 1 ? 's' : ''} added (max 5)
-                          </p>
-                          <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            value={currentImageUrl}
+                            onChange={(e) => setCurrentImageUrl(e.target.value)}
+                            placeholder="Enter image URL"
+                          />
+                          <Button
+                            type="button"
+                            onClick={handleAddImageUrl}
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        {productImageUrls.length > 0 && (
+                          <div className="space-y-2">
                             {productImageUrls.map((url, index) => (
-                              <div key={index} className="relative group">
-                                <div className="aspect-square rounded-lg border overflow-hidden bg-muted">
+                              <div key={index} className="flex items-center gap-2 p-2 border rounded-md">
+                                <div className="w-12 h-12 flex-shrink-0 bg-muted rounded overflow-hidden">
                                   <img
                                     src={url}
-                                    alt={`Product preview ${index + 1}`}
+                                    alt={`Preview ${index + 1}`}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.style.display = 'none';
-                                      const parent = target.parentElement;
-                                      if (parent) {
-                                        const fallback = document.createElement('div');
-                                        fallback.className = 'w-full h-full flex items-center justify-center';
-                                        fallback.innerHTML = '<div class="text-muted-foreground"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>';
-                                        parent.appendChild(fallback);
-                                      }
+                                      e.currentTarget.style.display = 'none';
+                                      e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="h-6 w-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
                                     }}
                                   />
                                 </div>
+                                <span className="flex-1 text-sm truncate">{url}</span>
                                 <Button
                                   type="button"
                                   onClick={() => handleRemoveImageUrl(index)}
-                                  variant="destructive"
-                                  size="icon"
-                                  className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  variant="ghost"
+                                  size="sm"
                                 >
-                                  <X className="h-3 w-3" />
+                                  <X className="h-4 w-4" />
                                 </Button>
                               </div>
                             ))}
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
 
-                    <Button onClick={handleAddProduct} disabled={isAdding} className="w-full">
-                      {isAdding ? 'Adding...' : 'Add Product'}
-                    </Button>
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setAddProductDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button onClick={handleAddProduct} disabled={isAdding}>
+                        {isAdding ? 'Adding...' : 'Add Product'}
+                      </Button>
+                    </div>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -387,72 +407,61 @@ function NurseryDashboardContent() {
               {productsLoading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-20 w-full" />
+                    <Skeleton key={i} className="h-24" />
                   ))}
                 </div>
-              ) : products && products.length > 0 ? (
+              ) : !products || products.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>No products yet. Add your first product to get started.</p>
+                </div>
+              ) : (
                 <div className="space-y-4">
                   {products.map((product) => (
-                    <div key={product.id.toString()} className="border rounded-lg p-4">
-                      <div className="flex gap-4">
-                        {product.imageUrls && product.imageUrls.length > 0 && (
-                          <div className="flex-shrink-0">
-                            <div className="w-20 h-20 rounded-lg border overflow-hidden bg-muted">
-                              <img
-                                src={product.imageUrls[0]}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  const parent = target.parentElement;
-                                  if (parent) {
-                                    const fallback = document.createElement('div');
-                                    fallback.className = 'w-full h-full flex items-center justify-center text-muted-foreground';
-                                    fallback.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
-                                    parent.appendChild(fallback);
-                                  }
-                                }}
-                              />
-                            </div>
+                    <div
+                      key={product.id.toString()}
+                      className="flex items-start gap-4 p-4 border rounded-lg"
+                    >
+                      <div className="w-16 h-16 flex-shrink-0 bg-muted rounded overflow-hidden">
+                        {product.imageUrls.length > 0 ? (
+                          <img
+                            src={product.imageUrls[0]}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="h-8 w-8 text-muted-foreground" />
                           </div>
                         )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex-1">
-                              <h4 className="font-semibold">{product.name}</h4>
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {product.description}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2 ml-4">
-                              <Label htmlFor={`active-${product.id}`} className="text-sm">
-                                Active
-                              </Label>
-                              <Switch
-                                id={`active-${product.id}`}
-                                checked={product.active}
-                                onCheckedChange={() => handleToggleActive(product.id, product.active)}
-                              />
-                            </div>
-                          </div>
-                          <div className="flex gap-4 text-sm text-muted-foreground">
-                            <span>${(Number(product.priceCents) / 100).toFixed(2)}</span>
-                            <span>Stock: {product.stock.toString()}</span>
-                            {product.imageUrls && product.imageUrls.length > 0 && (
-                              <span className="flex items-center gap-1">
-                                <ImageIcon className="h-3 w-3" />
-                                {product.imageUrls.length}
-                              </span>
-                            )}
-                          </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{product.name}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {product.description}
+                        </p>
+                        <div className="flex items-center gap-4 mt-2 text-sm">
+                          <span className="font-medium">₹{(Number(product.priceCents) / 100).toFixed(2)}</span>
+                          <span className="text-muted-foreground">Stock: {product.stock.toString()}</span>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor={`active-${product.id}`} className="text-sm">
+                          {product.active ? 'Active' : 'Inactive'}
+                        </Label>
+                        <Switch
+                          id={`active-${product.id}`}
+                          checked={product.active}
+                          onCheckedChange={() => handleToggleActive(product.id, product.active)}
+                        />
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">No products yet</p>
               )}
             </CardContent>
           </Card>

@@ -9,7 +9,10 @@ export function useGardenCenterProductsAdmin(gardenCenterId: GardenCenterId, ena
     queryKey: ['gardenCenterProducts', gardenCenterId.toString()],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getProductsForGardenCenter(gardenCenterId);
+      // Backend doesn't have getProductsForGardenCenter
+      // Fallback: get all active products and filter by gardenCenterId
+      const allProducts = await actor.getActiveProducts();
+      return allProducts.filter((p) => p.gardenCenterId === gardenCenterId);
     },
     enabled: !!actor && !actorFetching && enabled,
   });

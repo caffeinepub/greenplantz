@@ -1,78 +1,99 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T11:14:13.626Z",
-  "summary": "Diff implements product photo support across backend type + migration and multiple frontend surfaces (product cards, product details gallery, nursery add-product UI). It also adds nursery portal registration flow and expands admin nurseries UI toward product visibility + removal confirmation. Team Portal (/portal/team) changes and backend admin-only garden center removal are not evidenced in the provided diff summary.",
+  "generatedAt": "2026-02-08T14:06:51.144Z",
+  "summary": "Diff adds a hierarchical category model (parentCategoryId + CategoryWithSubcategories), frontend taxonomy utilities/hooks, and updates CatalogPage to filter via taxonomy descendants. However, the diff summary does not show backend seed taxonomy creation with the exact required labels, nor does it show the backend API that exposes the full taxonomy tree to the frontend, and nursery add-product submission wiring is truncated/unclear.",
   "missing_requirements": [
     {
-      "id": "REQ-21",
-      "requirement": "Extend backend product APIs so imageUrls is returned from getProduct, getActiveProducts, getProductsForCategory, searchProducts, and getProductsForGardenCenter; and addProduct/updateProduct accept and persist the list with default empty list.",
-      "reason": "The diff shows the Product type now includes imageUrls and a migration that backfills imageUrls to [], but the summary does not show updates to all required query methods or addProduct/updateProduct implementations/signatures in backend/main.mo (file is truncated).",
+      "id": "REQ-30",
+      "requirement": "Backend exposes categories in a way that the frontend can render the parent/child structure without hardcoding names (e.g., a getFullCategoryTaxonomy-style API returning a tree).",
+      "reason": "Frontend hook calls actor.getFullCategoryTaxonomy(), but the diff summary for backend/main.mo is truncated and does not provide evidence that this method exists/returns the required structure.",
       "evidence": [
-        "backend/main.mo (truncated: shows Product.imageUrls but not the methods)",
-        "backend/migration.mo (adds imageUrls default [])"
+        "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
+        "backend/main.mo (truncated)"
       ]
     },
     {
-      "id": "REQ-22",
-      "requirement": "Add Product dialog supports entering multiple image URLs and previewing them before submission.",
-      "reason": "NurseryDashboardPage.tsx shows state and handlers for adding/removing up to 5 URLs and sending imageUrls via hook, but the truncated diff does not clearly show a rendered thumbnail/preview list UI.",
+      "id": "REQ-30",
+      "requirement": "Category taxonomy includes exactly these user-facing labels: Plants, Indoor Plants, Outdoor Plants, Seeds, Pots, Ceramic Pots, Plastic Pots, Fiber Pots, Fertilizers.",
+      "reason": "No seed/category creation code or constants showing these exact labels appear in the provided diff summary; backend/main.mo is truncated before any seed/taxonomy initialization is shown.",
       "evidence": [
-        "frontend/src/pages/nursery/NurseryDashboardPage.tsx (truncated: has productImageUrls/currentImageUrl handlers, but preview rendering not shown)"
+        "backend/main.mo (truncated)"
       ]
     },
     {
-      "id": "REQ-25",
-      "requirement": "Update Team Portal (/portal/team) to show explicit Internet Identity sign-in when unauthenticated; redirect platform admins to /admin/nurseries; show non-admin access message for authenticated non-admins.",
-      "reason": "No changes to the Team Portal page/route are included in the diff summary, so the required sign-in screen and routing/permission behavior are not evidenced.",
+      "id": "REQ-31",
+      "requirement": "Update backend seed data initialization to create the full category taxonomy (including subcategories) and ensure at least one seeded product is assigned to one of the requested categories.",
+      "reason": "Diff summary shows migration/type changes but does not show initializeSeedData (or equivalent) being updated to create the requested category tree or assign a seeded product to a leaf category.",
       "evidence": [
-        "File diff summary contains no modified file for a Team Portal page (e.g., frontend/src/pages/portals/TeamPortalPage.tsx or similar)"
+        "backend/main.mo (truncated)",
+        "frontend/src/hooks/admin/useAdminProducts.ts (calls actor.initializeSeedData but does not show backend implementation)"
       ]
     },
     {
-      "id": "REQ-26",
-      "requirement": "Admin nurseries UI shows products per nursery via getProductsForGardenCenter with name, price, stock, active status, and at least one photo thumbnail; handles zero products with English empty state.",
-      "reason": "The diff adds an admin hook to fetch garden center products and modifies AdminNurseriesPage.tsx, but the file is truncated and does not evidence rendering of the required product fields, thumbnail usage, or the zero-products empty state message.",
+      "id": "REQ-33",
+      "requirement": "Submitting a new product from NurseryDashboardPage sends the selected (sub)category ID to the backend as the product’s categoryId.",
+      "reason": "NurseryDashboardPage shows taxonomy fetching and a productCategoryId state, but the diff summary is truncated before showing the add-product submit handler that passes productCategoryId into useAddGardenCenterProduct().",
       "evidence": [
-        "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts (fetches getProductsForGardenCenter)",
-        "frontend/src/pages/admin/AdminNurseriesPage.tsx (truncated: imports hook/icons; rendering details not shown)"
-      ]
-    },
-    {
-      "id": "REQ-27",
-      "requirement": "Backend admin-only method to remove/disable a garden center; removed nursery’s products must not appear in public active catalog queries; unauthorized calls must trap.",
-      "reason": "Frontend adds a remove-garden-center mutation hook (truncated) and AdminNurseriesPage includes a remove confirmation flow, but backend/main.mo truncation does not show any new admin-only remove/disable garden center method nor the filtering changes for public product queries.",
-      "evidence": [
-        "backend/main.mo (truncated: no remove/disable garden center method shown)",
-        "frontend/src/hooks/admin/useGardenCentersAdmin.ts (truncated: begins defining useRemoveGardenCenter)"
-      ]
-    },
-    {
-      "id": "REQ-28",
-      "requirement": "Admin UI allows removing a nursery with confirmation dialog and refreshes list/product views without full reload; non-admins cannot use the control.",
-      "reason": "AdminNurseriesPage.tsx shows a confirmation dialog and a 'removeNursery' action that calls useRemoveGardenCenter, but the hook implementation is truncated so post-removal refresh/invalidation behavior is not evidenced; also non-admin gating is implied via RequirePlatformAdmin import but the truncated file does not show it wrapping the page.",
-      "evidence": [
-        "frontend/src/pages/admin/AdminNurseriesPage.tsx (truncated: AlertDialog + removeNursery action present, RequirePlatformAdmin imported)",
-        "frontend/src/hooks/admin/useGardenCentersAdmin.ts (truncated: useRemoveGardenCenter implementation not shown)"
+        "frontend/src/pages/nursery/NurseryDashboardPage.tsx (truncated)",
+        "frontend/src/hooks/nursery/useGardenCenterProducts.ts (mutation accepts categoryId and passes it to actor.addProduct)"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.62,
+  "hallucinated_features": [
+    {
+      "description": "Added a persistent migration module and actor migration wiring to map old categories/products to new structures.",
+      "reason": "BuildRequest does not ask for persistent migration infrastructure; it only constrains backend to a single actor and requests taxonomy changes.",
+      "evidence": [
+        "backend/migration.mo",
+        "backend/main.mo (\"with migration = Migration.run\")"
+      ]
+    },
+    {
+      "description": "Extended Product type/state with parentCategoryId field and migrated products to include parentCategoryId.",
+      "reason": "BuildRequest requires hierarchical categories; it does not request parent/child relationships on products.",
+      "evidence": [
+        "backend/main.mo (Product includes parentCategoryId)",
+        "backend/migration.mo (NewProduct includes parentCategoryId)"
+      ]
+    },
+    {
+      "description": "Added/modified multiple admin/nursery hooks with explicit placeholders for missing backend methods (toggle active, update product, get garden centers, place order).",
+      "reason": "BuildRequest is focused on hierarchical categories, catalog filtering, and nursery categorization; these additional admin/order workflow placeholders are unrelated.",
+      "evidence": [
+        "frontend/src/hooks/admin/useAdminProducts.ts",
+        "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts",
+        "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
+        "frontend/src/hooks/nursery/useGardenCenterProducts.ts",
+        "frontend/src/hooks/nursery/useMyGardenCenter.ts",
+        "frontend/src/hooks/orders/usePlaceOrder.ts"
+      ]
+    },
+    {
+      "description": "Homepage updated to fetch and display top-level categories from the taxonomy.",
+      "reason": "REQ-30 to REQ-33 do not request changes to HomePage category browsing UI.",
+      "evidence": [
+        "frontend/src/pages/HomePage.tsx (truncated)"
+      ]
+    }
+  ],
+  "confidence": 0.66,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/store/ProductCard.tsx",
     "frontend/src/hooks/admin/useAdminProducts.ts",
     "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts",
     "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
-    "frontend/src/hooks/nursery/useCreateGardenCenter.ts",
     "frontend/src/hooks/nursery/useGardenCenterProducts.ts",
-    "frontend/src/pages/ProductDetailsPage.tsx",
-    "frontend/src/pages/admin/AdminNurseriesPage.tsx",
+    "frontend/src/hooks/nursery/useMyGardenCenter.ts",
+    "frontend/src/hooks/orders/usePlaceOrder.ts",
+    "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
+    "frontend/src/hooks/storefront/useProducts.ts",
+    "frontend/src/pages/CatalogPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
     "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
-    "frontend/src/pages/portals/NurseryPortalPage.tsx",
+    "frontend/src/utils/categoryTaxonomy.ts",
     "project_state.json"
   ]
 }

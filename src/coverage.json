@@ -1,110 +1,64 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T11:14:13.629Z",
+  "generatedAt": "2026-02-08T14:06:51.147Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 9,
-    "implemented": 6,
+    "total": 4,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-20",
-        "summary": "Update the Nursery Portal (/portal/nursery) to support a complete Vendor/Nursery onboarding flow using Internet Identity: after the user signs in, if they do not yet belong to a nursery (no gardenCenterMemberships), show a “Sign Up / Register Nursery” form that creates a new nursery (garden center) by calling the backend createGardenCenter(name, location), then routes the user to the Nursery Dashboard upon success.",
+        "id": "REQ-30",
+        "summary": "Implement a structured product category taxonomy that supports parent/child relationships so the catalog can represent and filter by: Plants → (Indoor Plants, Outdoor Plants), Seeds, Pots → (Ceramic Pots, Plastic Pots, Fiber Pots), and Fertilizers.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/portals/NurseryPortalPage.tsx",
-          "frontend/src/hooks/nursery/useCreateGardenCenter.ts"
+          "frontend/src/hooks/storefront/useCategories.ts",
+          "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
+          "frontend/src/utils/categoryTaxonomy.ts",
+          "frontend/src/pages/HomePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/portals/NurseryPortalPage.tsx",
-          "frontend/src/hooks/nursery/useCreateGardenCenter.ts"
+          "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
+          "frontend/src/utils/categoryTaxonomy.ts",
+          "frontend/src/pages/HomePage.tsx"
         ]
       },
       {
-        "id": "REQ-21",
-        "summary": "Extend the backend Product data model and product management APIs to support product photos by storing an array of image URLs per product (e.g., imageUrls : [Text]) and returning it from getProduct, getActiveProducts, getProductsForCategory, searchProducts, and getProductsForGardenCenter.",
+        "id": "REQ-31",
+        "summary": "Update backend seed data initialization to create the full category taxonomy (including subcategories) and ensure seeded products (and/or newly created products) can be assigned to a leaf category (e.g., Indoor Plants, Ceramic Pots).",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-22",
-        "summary": "Update the Nursery Dashboard product creation UI (currently the “Add Product” dialog in frontend/src/pages/nursery/NurseryDashboardPage.tsx) to allow entering multiple product photo URLs (at least 1, up to a reasonable limit such as 5) and previewing them before submission; send these URLs to the backend when creating the product.",
+        "id": "REQ-32",
+        "summary": "Update the storefront catalog filtering UI (frontend/src/pages/CatalogPage.tsx) to support filtering by the new hierarchical categories (parents + subcategories), including the ability to filter specifically by Pots subcategories (Ceramic Pots, Plastic Pots, Fiber Pots).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/CatalogPage.tsx",
+          "frontend/src/utils/categoryTaxonomy.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/CatalogPage.tsx",
+          "frontend/src/utils/categoryTaxonomy.ts"
+        ]
+      },
+      {
+        "id": "REQ-33",
+        "summary": "Update the nursery product creation flow (frontend/src/pages/nursery/NurseryDashboardPage.tsx) so garden nursery team members can assign a category/subcategory from the structured taxonomy when adding a product, and ensure the selected category is sent to the backend as the product’s categoryId.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
-          "frontend/src/hooks/nursery/useGardenCenterProducts.ts"
+          "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
+          "frontend/src/utils/categoryTaxonomy.ts"
         ],
         "matchedFiles": [
           "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
-          "frontend/src/hooks/nursery/useGardenCenterProducts.ts"
-        ]
-      },
-      {
-        "id": "REQ-23",
-        "summary": "Update the Product Details page (frontend/src/pages/ProductDetailsPage.tsx) to display product photos when available (imageUrls non-empty), including a primary image and selectable thumbnails (or a simple gallery) to switch the primary image.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/ProductDetailsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/ProductDetailsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-24",
-        "summary": "Update storefront product cards (frontend/src/components/store/ProductCard.tsx) to show the first product photo (imageUrls[0]) when available; otherwise keep the existing placeholder behavior.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/store/ProductCard.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/store/ProductCard.tsx"
-        ]
-      },
-      {
-        "id": "REQ-25",
-        "summary": "Update the Team Portal (/portal/team) experience to include an explicit “Sign In” screen using Internet Identity, and ensure that authenticated platform admins are routed to the admin nursery management area; non-admin authenticated users must see an English access/permissions message explaining that platform admin access is required.",
-        "status": "missing",
-        "plannedFiles": [
-          "frontend/src/pages/portals/TeamPortalPage.tsx"
-        ],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-26",
-        "summary": "Enhance the GreenPlantz Team admin nursery management UI (frontend/src/pages/admin/AdminNurseriesPage.tsx) so that, for each nursery shop (garden center), the admin can view the products added by that nursery (using getProductsForGardenCenter) and see key product fields including name, price, stock, active status, and at least one product photo thumbnail when available.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/admin/AdminNurseriesPage.tsx",
-          "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/admin/AdminNurseriesPage.tsx",
-          "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts"
-        ]
-      },
-      {
-        "id": "REQ-27",
-        "summary": "Add backend support for GreenPlantz team members (platform admins) to remove a nursery shop (garden center) from the platform, including defining an admin-only method to disable or delete a garden center and ensuring products associated with the removed nursery no longer appear in the public active product catalog.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-28",
-        "summary": "Update the admin nursery management UI to allow a platform admin to remove a nursery shop (garden center) with a confirmation dialog, and refresh the admin list and related product views after the action completes.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
-          "frontend/src/pages/admin/AdminNurseriesPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
-          "frontend/src/pages/admin/AdminNurseriesPage.tsx"
+          "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
+          "frontend/src/utils/categoryTaxonomy.ts"
         ]
       }
     ]
@@ -118,18 +72,20 @@
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/store/ProductCard.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/admin/useAdminProducts.ts",
     "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts",
     "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
-    "frontend/src/hooks/nursery/useCreateGardenCenter.ts",
     "frontend/src/hooks/nursery/useGardenCenterProducts.ts",
-    "frontend/src/pages/ProductDetailsPage.tsx",
-    "frontend/src/pages/admin/AdminNurseriesPage.tsx",
+    "frontend/src/hooks/nursery/useMyGardenCenter.ts",
+    "frontend/src/hooks/orders/usePlaceOrder.ts",
+    "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
+    "frontend/src/hooks/storefront/useProducts.ts",
+    "frontend/src/pages/CatalogPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
     "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
-    "frontend/src/pages/portals/NurseryPortalPage.tsx",
+    "frontend/src/utils/categoryTaxonomy.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

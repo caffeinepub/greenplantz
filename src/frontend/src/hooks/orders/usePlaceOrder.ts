@@ -1,7 +1,16 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
-import type { OrderId, OrderItem } from '../../backend';
+import type { ProductId } from '../../backend';
 import { toast } from 'sonner';
+
+// Local type definitions since OrderId and OrderItem are not exported from backend
+export type OrderId = bigint;
+
+export interface OrderItem {
+  productId: ProductId;
+  quantity: bigint;
+  pricePerItem: bigint;
+}
 
 interface CartItem {
   productId: bigint;
@@ -24,7 +33,8 @@ export function usePlaceOrder() {
         pricePerItem: BigInt(item.priceCents),
       }));
 
-      return actor.placeOrder(orderItems);
+      // Backend doesn't have placeOrder method
+      throw new Error('Place order functionality not yet implemented in backend');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });

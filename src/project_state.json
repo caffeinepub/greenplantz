@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 11,
+  "projectStateVersion": 15,
   "summary": "Build a website and mobile app for GreenPlantz, an online store selling garden products and plants, with separate role-based logins for GreenPlantz team admins, Garden Nursery owners/teams, and Customers, including nursery-level management capabilities.",
   "architectural_notes": [
     "Introduce RBAC with distinct roles (GreenPlantz admin, nursery owner/team, customer) and permissions for product/nursery management and account disabling/removal.",
@@ -8,10 +8,14 @@
     "Update SiteFooter bottom section to include business contact methods (WhatsApp, Instagram, support email) alongside existing quick links; keep role-based portal links intact.",
     "Extend role-based portals to include explicit registration + sign-in UIs for Nursery/Vendor and GreenPlantz Team/Admin.",
     "Nursery product management UI must support attaching/displaying product photos (image upload/selection and rendering on product details).",
-    "GreenPlantz Team/Admin UI should include nursery/shop listing with drill-down to products and an action to remove a nursery/shop."
+    "GreenPlantz Team/Admin UI should include nursery/shop listing with drill-down to products and an action to remove a nursery/shop.",
+    "Update SiteFooter contact/business info area to also display GreenPlantz service areas/locations text: \"Kerala | Karnataka | Tamil Nadu | Andra Pradesh\".",
+    "Adopt a hierarchical category taxonomy (e.g., Plants → Indoor/Outdoor; Pots → Ceramic/Plastic/Fiber; plus Seeds and Fertilizers) and ensure nursery product creation/edit flows include category/subcategory selection mapped to backend category IDs."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Admin portal access issue: user reports the Team/Admin portal stays blank / shows Access Denied and the UI does not display the signed-in Internet Identity principal ID anywhere, preventing admin allowlisting."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-a-greenplantz-storefront-web-app-that-is-fully-responsive-mobile-first-and-functions-as-the-website-and-app-experience-single-react-app-with-layouts-optimized-for-desktop-tablet-and-phone",
@@ -172,6 +176,38 @@
         "REQ-28"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-website-footer-to-display-the-greenplantz-address-service-area-text-greenplantz-kerala-karnataka-tamil-nadu-andra-pradesh-using-english-labeling-in-a-way-that-is-visible-on-all-screen-sizes",
+      "title": "Update the website footer to display the GreenPlantz address/service area text \"GreenPlantz  Kerala | Karnataka | Tamil Nadu | Andra Pradesh\" using English labeling, in a way that is visible on all screen sizes.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-structured-product-category-taxonomy-that-supports-parent-child-relationships-so-the-catalog-can-represent-and-filter-by-plants-indoor-plants-outdoor-plants-seeds-pots-ceramic-pots-plastic-pots-fiber-pots-and-fertilizers",
+      "title": "Implement a structured product category taxonomy that supports parent/child relationships so the catalog can represent and filter by: Plants → (Indoor Plants, Outdoor Plants), Seeds, Pots → (Ceramic Pots, Plastic Pots, Fiber Pots), and Fertilizers.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-storefront-catalog-filtering-ui-frontend-src-pages-catalogpage-tsx-to-support-filtering-by-the-new-hierarchical-categories-parents-subcategories-including-the-ability-to-filter-specifically-by-pots-subcategories-ceramic-pots-plastic-pots-fiber-pots",
+      "title": "Update the storefront catalog filtering UI (frontend/src/pages/CatalogPage.tsx) to support filtering by the new hierarchical categories (parents + subcategories), including the ability to filter specifically by Pots subcategories (Ceramic Pots, Plastic Pots, Fiber Pots).",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-nursery-product-creation-flow-frontend-src-pages-nursery-nurserydashboardpage-tsx-so-garden-nursery-team-members-can-assign-a-category-subcategory-from-the-structured-taxonomy-when-adding-a-product-and-ensure-the-selected-category-is-sent-to-the-backend-as-the-product-s-categoryid",
+      "title": "Update the nursery product creation flow (frontend/src/pages/nursery/NurseryDashboardPage.tsx) so garden nursery team members can assign a category/subcategory from the structured taxonomy when adding a product, and ensure the selected category is sent to the backend as the product’s categoryId.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -314,6 +350,26 @@
       "summary": "Add backend support for GreenPlantz team members (platform admins) to remove a nursery shop (garden center) from the platform, including defining an admin-only method to disable or delete a garden center and ensuring products associated with the removed nursery no longer appear in the public active product catalog.",
       "reqIds": [
         "REQ-27"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Add GreenPlantz address/service area text \"Kerala | Karnataka | Tamil Nadu | Andra Pradesh\" to the website (likely in the footer/contact area).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Define and implement a structured product category taxonomy (Plants → Indoor/Outdoor, Seeds, Pots → Ceramic/Plastic/Fiber, Fertilizers) and ensure storefront supports category filtering and nursery product creation allows selecting a category/subcategory.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Update backend seed data initialization to create the full category taxonomy (including subcategories) and ensure seeded products (and/or newly created products) can be assigned to a leaf category (e.g., Indoor Plants, Ceramic Pots).",
+      "reqIds": [
+        "REQ-31"
       ],
       "status": "pending"
     }

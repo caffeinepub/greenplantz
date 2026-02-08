@@ -19,23 +19,14 @@ export interface Category {
   'id' : CategoryId,
   'name' : string,
   'description' : string,
+  'parentCategoryId' : [] | [CategoryId],
 }
 export type CategoryId = bigint;
-export interface GardenCenter {
-  'id' : bigint,
-  'name' : string,
-  'createdAt' : bigint,
-  'teamMembers' : Array<TeamMember>,
-  'enabled' : boolean,
-  'location' : string,
+export interface CategoryWithSubcategories {
+  'category' : Category,
+  'subcategories' : Array<CategoryWithSubcategories>,
 }
 export type GardenCenterId = bigint;
-export type OrderId = bigint;
-export interface OrderItem {
-  'pricePerItem' : bigint,
-  'productId' : ProductId,
-  'quantity' : bigint,
-}
 export interface Product {
   'id' : ProductId,
   'categoryId' : CategoryId,
@@ -44,18 +35,18 @@ export interface Product {
   'name' : string,
   'gardenCenterId' : GardenCenterId,
   'description' : string,
+  'parentCategoryId' : [] | [CategoryId],
   'stock' : bigint,
   'priceCents' : bigint,
 }
 export type ProductId = bigint;
-export interface TeamMember { 'principal' : Principal, 'enabled' : boolean }
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addCategory' : ActorMethod<[string, string], CategoryId>,
+  'addCategory' : ActorMethod<[string, string, [] | [CategoryId]], CategoryId>,
   'addGardenCenterMember' : ActorMethod<[GardenCenterId, Principal], undefined>,
   'addProduct' : ActorMethod<
     [string, string, CategoryId, bigint, bigint, GardenCenterId, Array<string>],
@@ -63,42 +54,25 @@ export interface _SERVICE {
   >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createGardenCenter' : ActorMethod<[string, string], GardenCenterId>,
-  'disableGardenCenterMember' : ActorMethod<
-    [GardenCenterId, Principal],
-    undefined
-  >,
-  'enableGardenCenterMember' : ActorMethod<
-    [GardenCenterId, Principal],
-    undefined
-  >,
   'getActiveProducts' : ActorMethod<[], Array<Product>>,
   'getCallerRole' : ActorMethod<[], CallerRole>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCategories' : ActorMethod<[], Array<Category>>,
-  'getGardenCenter' : ActorMethod<[GardenCenterId], GardenCenter>,
-  'getGardenCenters' : ActorMethod<[], Array<GardenCenter>>,
+  'getFullCategoryTaxonomy' : ActorMethod<[], Array<CategoryWithSubcategories>>,
   'getProduct' : ActorMethod<[ProductId], Product>,
   'getProductsForCategory' : ActorMethod<[CategoryId], Array<Product>>,
-  'getProductsForGardenCenter' : ActorMethod<[GardenCenterId], Array<Product>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'initializeSeedData' : ActorMethod<[], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'placeOrder' : ActorMethod<[Array<OrderItem>], OrderId>,
   'removeGardenCenter' : ActorMethod<[GardenCenterId], undefined>,
   'removeGardenCenterMember' : ActorMethod<
     [GardenCenterId, Principal],
     undefined
   >,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'searchProducts' : ActorMethod<[string], Array<Product>>,
-  'toggleProductActive' : ActorMethod<[ProductId, boolean], undefined>,
   'updateGardenCenter' : ActorMethod<
     [GardenCenterId, string, string],
-    undefined
-  >,
-  'updateProduct' : ActorMethod<
-    [ProductId, string, string, CategoryId, bigint, bigint, Array<string>],
     undefined
   >,
 }

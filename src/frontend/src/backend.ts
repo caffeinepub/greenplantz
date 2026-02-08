@@ -89,6 +89,7 @@ export class ExternalBlob {
         return this;
     }
 }
+export type GardenCenterId = bigint;
 export interface Product {
     id: ProductId;
     categoryId: CategoryId;
@@ -97,40 +98,27 @@ export interface Product {
     name: string;
     gardenCenterId: GardenCenterId;
     description: string;
+    parentCategoryId?: CategoryId;
     stock: bigint;
     priceCents: bigint;
-}
-export type GardenCenterId = bigint;
-export interface GardenCenter {
-    id: bigint;
-    name: string;
-    createdAt: bigint;
-    teamMembers: Array<TeamMember>;
-    enabled: boolean;
-    location: string;
 }
 export interface Category {
     id: CategoryId;
     name: string;
     description: string;
+    parentCategoryId?: CategoryId;
 }
 export interface CallerRole {
     gardenCenterMemberships: Array<GardenCenterId>;
     isCustomer: boolean;
     isPlatformAdmin: boolean;
 }
-export interface OrderItem {
-    pricePerItem: bigint;
-    productId: ProductId;
-    quantity: bigint;
-}
-export interface TeamMember {
-    principal: Principal;
-    enabled: boolean;
-}
-export type ProductId = bigint;
 export type CategoryId = bigint;
-export type OrderId = bigint;
+export type ProductId = bigint;
+export interface CategoryWithSubcategories {
+    category: Category;
+    subcategories: Array<CategoryWithSubcategories>;
+}
 export interface UserProfile {
     name: string;
 }
@@ -141,36 +129,28 @@ export enum UserRole {
 }
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
-    addCategory(name: string, description: string): Promise<CategoryId>;
+    addCategory(name: string, description: string, parentCategoryId: CategoryId | null): Promise<CategoryId>;
     addGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
     addProduct(name: string, description: string, categoryId: CategoryId, priceCents: bigint, stock: bigint, gardenCenterId: GardenCenterId, imageUrls: Array<string>): Promise<ProductId>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createGardenCenter(name: string, location: string): Promise<GardenCenterId>;
-    disableGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
-    enableGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
     getActiveProducts(): Promise<Array<Product>>;
     getCallerRole(): Promise<CallerRole>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCategories(): Promise<Array<Category>>;
-    getGardenCenter(gardenCenterId: GardenCenterId): Promise<GardenCenter>;
-    getGardenCenters(): Promise<Array<GardenCenter>>;
+    getFullCategoryTaxonomy(): Promise<Array<CategoryWithSubcategories>>;
     getProduct(productId: ProductId): Promise<Product>;
     getProductsForCategory(categoryId: CategoryId): Promise<Array<Product>>;
-    getProductsForGardenCenter(gardenCenterId: GardenCenterId): Promise<Array<Product>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     initializeSeedData(): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
-    placeOrder(items: Array<OrderItem>): Promise<OrderId>;
     removeGardenCenter(gardenCenterId: GardenCenterId): Promise<void>;
     removeGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    searchProducts(searchTerm: string): Promise<Array<Product>>;
-    toggleProductActive(productId: ProductId, active: boolean): Promise<void>;
     updateGardenCenter(gardenCenterId: GardenCenterId, name: string, location: string): Promise<void>;
-    updateProduct(productId: ProductId, name: string, description: string, categoryId: CategoryId, priceCents: bigint, stock: bigint, imageUrls: Array<string>): Promise<void>;
 }
-import type { UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { Category as _Category, CategoryId as _CategoryId, CategoryWithSubcategories as _CategoryWithSubcategories, GardenCenterId as _GardenCenterId, Product as _Product, ProductId as _ProductId, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
@@ -187,17 +167,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async addCategory(arg0: string, arg1: string): Promise<CategoryId> {
+    async addCategory(arg0: string, arg1: string, arg2: CategoryId | null): Promise<CategoryId> {
         if (this.processError) {
             try {
-                const result = await this.actor.addCategory(arg0, arg1);
+                const result = await this.actor.addCategory(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.addCategory(arg0, arg1);
+            const result = await this.actor.addCategory(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2));
             return result;
         }
     }
@@ -232,14 +212,14 @@ export class Backend implements backendInterface {
     async assignCallerUserRole(arg0: Principal, arg1: UserRole): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n2(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n2(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -257,46 +237,18 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async disableGardenCenterMember(arg0: GardenCenterId, arg1: Principal): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.disableGardenCenterMember(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.disableGardenCenterMember(arg0, arg1);
-            return result;
-        }
-    }
-    async enableGardenCenterMember(arg0: GardenCenterId, arg1: Principal): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.enableGardenCenterMember(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.enableGardenCenterMember(arg0, arg1);
-            return result;
-        }
-    }
     async getActiveProducts(): Promise<Array<Product>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getActiveProducts();
-                return result;
+                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getActiveProducts();
-            return result;
+            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerRole(): Promise<CallerRole> {
@@ -317,126 +269,98 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n4(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n9(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n4(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n9(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCategories(): Promise<Array<Category>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCategories();
-                return result;
+                return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCategories();
-            return result;
+            return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
         }
     }
-    async getGardenCenter(arg0: GardenCenterId): Promise<GardenCenter> {
+    async getFullCategoryTaxonomy(): Promise<Array<CategoryWithSubcategories>> {
         if (this.processError) {
             try {
-                const result = await this.actor.getGardenCenter(arg0);
-                return result;
+                const result = await this.actor.getFullCategoryTaxonomy();
+                return from_candid_vec_n14(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getGardenCenter(arg0);
-            return result;
-        }
-    }
-    async getGardenCenters(): Promise<Array<GardenCenter>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getGardenCenters();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getGardenCenters();
-            return result;
+            const result = await this.actor.getFullCategoryTaxonomy();
+            return from_candid_vec_n14(this._uploadFile, this._downloadFile, result);
         }
     }
     async getProduct(arg0: ProductId): Promise<Product> {
         if (this.processError) {
             try {
                 const result = await this.actor.getProduct(arg0);
-                return result;
+                return from_candid_Product_n5(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getProduct(arg0);
-            return result;
+            return from_candid_Product_n5(this._uploadFile, this._downloadFile, result);
         }
     }
     async getProductsForCategory(arg0: CategoryId): Promise<Array<Product>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getProductsForCategory(arg0);
-                return result;
+                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getProductsForCategory(arg0);
-            return result;
-        }
-    }
-    async getProductsForGardenCenter(arg0: GardenCenterId): Promise<Array<Product>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getProductsForGardenCenter(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getProductsForGardenCenter(arg0);
-            return result;
+            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
         }
     }
     async initializeSeedData(): Promise<void> {
@@ -464,20 +388,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.isCallerAdmin();
-            return result;
-        }
-    }
-    async placeOrder(arg0: Array<OrderItem>): Promise<OrderId> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.placeOrder(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.placeOrder(arg0);
             return result;
         }
     }
@@ -523,34 +433,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async searchProducts(arg0: string): Promise<Array<Product>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.searchProducts(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.searchProducts(arg0);
-            return result;
-        }
-    }
-    async toggleProductActive(arg0: ProductId, arg1: boolean): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.toggleProductActive(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.toggleProductActive(arg0, arg1);
-            return result;
-        }
-    }
     async updateGardenCenter(arg0: GardenCenterId, arg1: string, arg2: string): Promise<void> {
         if (this.processError) {
             try {
@@ -565,28 +447,92 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async updateProduct(arg0: ProductId, arg1: string, arg2: string, arg3: CategoryId, arg4: bigint, arg5: bigint, arg6: Array<string>): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateProduct(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateProduct(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
-            return result;
-        }
-    }
 }
-function from_candid_UserRole_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n5(_uploadFile, _downloadFile, value);
+function from_candid_CategoryWithSubcategories_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CategoryWithSubcategories): CategoryWithSubcategories {
+    return from_candid_record_n16(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+function from_candid_Category_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Category): Category {
+    return from_candid_record_n13(_uploadFile, _downloadFile, value);
+}
+function from_candid_Product_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Product): Product {
+    return from_candid_record_n6(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserRole_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n10(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_CategoryId]): CategoryId | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_variant_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: _CategoryId;
+    name: string;
+    description: string;
+    parentCategoryId: [] | [_CategoryId];
+}): {
+    id: CategoryId;
+    name: string;
+    description: string;
+    parentCategoryId?: CategoryId;
+} {
+    return {
+        id: value.id,
+        name: value.name,
+        description: value.description,
+        parentCategoryId: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.parentCategoryId))
+    };
+}
+function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    category: _Category;
+    subcategories: Array<_CategoryWithSubcategories>;
+}): {
+    category: Category;
+    subcategories: Array<CategoryWithSubcategories>;
+} {
+    return {
+        category: from_candid_Category_n12(_uploadFile, _downloadFile, value.category),
+        subcategories: from_candid_vec_n14(_uploadFile, _downloadFile, value.subcategories)
+    };
+}
+function from_candid_record_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: _ProductId;
+    categoryId: _CategoryId;
+    active: boolean;
+    imageUrls: Array<string>;
+    name: string;
+    gardenCenterId: _GardenCenterId;
+    description: string;
+    parentCategoryId: [] | [_CategoryId];
+    stock: bigint;
+    priceCents: bigint;
+}): {
+    id: ProductId;
+    categoryId: CategoryId;
+    active: boolean;
+    imageUrls: Array<string>;
+    name: string;
+    gardenCenterId: GardenCenterId;
+    description: string;
+    parentCategoryId?: CategoryId;
+    stock: bigint;
+    priceCents: bigint;
+} {
+    return {
+        id: value.id,
+        categoryId: value.categoryId,
+        active: value.active,
+        imageUrls: value.imageUrls,
+        name: value.name,
+        gardenCenterId: value.gardenCenterId,
+        description: value.description,
+        parentCategoryId: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.parentCategoryId)),
+        stock: value.stock,
+        priceCents: value.priceCents
+    };
+}
+function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -595,10 +541,22 @@ function from_candid_variant_n5(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
-    return to_candid_variant_n2(_uploadFile, _downloadFile, value);
+function from_candid_vec_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Category>): Array<Category> {
+    return value.map((x)=>from_candid_Category_n12(_uploadFile, _downloadFile, x));
 }
-function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
+function from_candid_vec_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_CategoryWithSubcategories>): Array<CategoryWithSubcategories> {
+    return value.map((x)=>from_candid_CategoryWithSubcategories_n15(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Product>): Array<Product> {
+    return value.map((x)=>from_candid_Product_n5(_uploadFile, _downloadFile, x));
+}
+function to_candid_UserRole_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
+    return to_candid_variant_n3(_uploadFile, _downloadFile, value);
+}
+function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: CategoryId | null): [] | [_CategoryId] {
+    return value === null ? candid_none() : candid_some(value);
+}
+function to_candid_variant_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
     admin: null;
 } | {
     user: null;

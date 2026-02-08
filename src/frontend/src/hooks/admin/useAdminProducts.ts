@@ -50,7 +50,8 @@ export function useToggleProductActive() {
   return useMutation<void, Error, ToggleProductActiveParams>({
     mutationFn: async (params: ToggleProductActiveParams) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.toggleProductActive(params.productId, params.active);
+      // Backend doesn't have toggleProductActive method
+      throw new Error('Toggle product active functionality not yet implemented in backend');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });

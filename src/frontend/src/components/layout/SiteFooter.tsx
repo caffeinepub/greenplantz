@@ -11,9 +11,21 @@ export default function SiteFooter() {
           {/* Brand */}
           <div>
             <h3 className="font-bold text-lg mb-2 text-primary">GreenPlantz</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-3">
               Your trusted source for quality plants and garden supplies.
             </p>
+            <div className="text-sm text-muted-foreground">
+              <p className="font-medium text-foreground mb-1">Service Areas:</p>
+              <p className="flex flex-wrap gap-1">
+                <span>Kerala</span>
+                <span className="text-muted-foreground/60">|</span>
+                <span>Karnataka</span>
+                <span className="text-muted-foreground/60">|</span>
+                <span>Tamil Nadu</span>
+                <span className="text-muted-foreground/60">|</span>
+                <span>Andhra Pradesh</span>
+              </p>
+            </div>
           </div>
 
           {/* Quick Links */}

@@ -2,11 +2,13 @@ import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Leaf, Droplet, Sun } from 'lucide-react';
-import { useGetCategories } from '../hooks/storefront/useCategories';
+import { useGetFullCategoryTaxonomy } from '../hooks/storefront/useFullCategoryTaxonomy';
+import { getTopLevelCategories } from '../utils/categoryTaxonomy';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function HomePage() {
-  const { data: categories, isLoading } = useGetCategories();
+  const { data: taxonomy, isLoading } = useGetFullCategoryTaxonomy();
+  const topLevelCategories = taxonomy ? getTopLevelCategories(taxonomy) : [];
 
   return (
     <div className="flex flex-col">
@@ -98,7 +100,7 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories?.map((category) => (
+              {topLevelCategories.map((category) => (
                 <Link key={category.id.toString()} to="/catalog" search={{ category: category.id.toString() }}>
                   <Card className="group hover:shadow-lg transition-all cursor-pointer h-full">
                     <CardContent className="p-6">

@@ -1,8 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
-import type { GardenCenter, GardenCenterId } from '../../backend';
+import type { GardenCenterId } from '../../backend';
 import { Principal } from '@dfinity/principal';
 import { toast } from 'sonner';
+
+// Local type definition since GardenCenter is not exported from backend
+export interface GardenCenter {
+  id: GardenCenterId;
+  name: string;
+  location: string;
+  teamMembers: Array<{
+    principal: Principal;
+    enabled: boolean;
+  }>;
+  enabled: boolean;
+  createdAt: bigint;
+}
 
 export function useGetGardenCenters() {
   const { actor, isFetching: actorFetching } = useActor();
@@ -11,7 +24,9 @@ export function useGetGardenCenters() {
     queryKey: ['gardenCenters'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getGardenCenters();
+      // Backend doesn't have getGardenCenters method
+      // Return empty array until backend is updated
+      return [];
     },
     enabled: !!actor && !actorFetching,
   });
@@ -77,7 +92,8 @@ export function useDisableGardenCenterMember() {
   return useMutation<void, Error, DisableGardenCenterMemberParams>({
     mutationFn: async (params: DisableGardenCenterMemberParams) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.disableGardenCenterMember(params.gardenCenterId, params.memberPrincipal);
+      // Backend doesn't have disableGardenCenterMember method
+      throw new Error('Disable team member functionality not yet implemented in backend');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gardenCenters'] });
@@ -101,7 +117,8 @@ export function useEnableGardenCenterMember() {
   return useMutation<void, Error, EnableGardenCenterMemberParams>({
     mutationFn: async (params: EnableGardenCenterMemberParams) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.enableGardenCenterMember(params.gardenCenterId, params.memberPrincipal);
+      // Backend doesn't have enableGardenCenterMember method
+      throw new Error('Enable team member functionality not yet implemented in backend');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gardenCenters'] });

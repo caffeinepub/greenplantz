@@ -8,6 +8,7 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const CategoryWithSubcategories = IDL.Rec();
 export const CategoryId = IDL.Nat;
 export const GardenCenterId = IDL.Nat;
 export const ProductId = IDL.Nat;
@@ -24,6 +25,7 @@ export const Product = IDL.Record({
   'name' : IDL.Text,
   'gardenCenterId' : GardenCenterId,
   'description' : IDL.Text,
+  'parentCategoryId' : IDL.Opt(CategoryId),
   'stock' : IDL.Nat,
   'priceCents' : IDL.Nat,
 });
@@ -37,29 +39,22 @@ export const Category = IDL.Record({
   'id' : CategoryId,
   'name' : IDL.Text,
   'description' : IDL.Text,
+  'parentCategoryId' : IDL.Opt(CategoryId),
 });
-export const TeamMember = IDL.Record({
-  'principal' : IDL.Principal,
-  'enabled' : IDL.Bool,
-});
-export const GardenCenter = IDL.Record({
-  'id' : IDL.Nat,
-  'name' : IDL.Text,
-  'createdAt' : IDL.Int,
-  'teamMembers' : IDL.Vec(TeamMember),
-  'enabled' : IDL.Bool,
-  'location' : IDL.Text,
-});
-export const OrderItem = IDL.Record({
-  'pricePerItem' : IDL.Nat,
-  'productId' : ProductId,
-  'quantity' : IDL.Nat,
-});
-export const OrderId = IDL.Nat;
+CategoryWithSubcategories.fill(
+  IDL.Record({
+    'category' : Category,
+    'subcategories' : IDL.Vec(CategoryWithSubcategories),
+  })
+);
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addCategory' : IDL.Func([IDL.Text, IDL.Text], [CategoryId], []),
+  'addCategory' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Opt(CategoryId)],
+      [CategoryId],
+      [],
+    ),
   'addGardenCenterMember' : IDL.Func([GardenCenterId, IDL.Principal], [], []),
   'addProduct' : IDL.Func(
       [
@@ -76,31 +71,19 @@ export const idlService = IDL.Service({
     ),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'createGardenCenter' : IDL.Func([IDL.Text, IDL.Text], [GardenCenterId], []),
-  'disableGardenCenterMember' : IDL.Func(
-      [GardenCenterId, IDL.Principal],
-      [],
-      [],
-    ),
-  'enableGardenCenterMember' : IDL.Func(
-      [GardenCenterId, IDL.Principal],
-      [],
-      [],
-    ),
   'getActiveProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
   'getCallerRole' : IDL.Func([], [CallerRole], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
-  'getGardenCenter' : IDL.Func([GardenCenterId], [GardenCenter], ['query']),
-  'getGardenCenters' : IDL.Func([], [IDL.Vec(GardenCenter)], ['query']),
+  'getFullCategoryTaxonomy' : IDL.Func(
+      [],
+      [IDL.Vec(CategoryWithSubcategories)],
+      ['query'],
+    ),
   'getProduct' : IDL.Func([ProductId], [Product], ['query']),
   'getProductsForCategory' : IDL.Func(
       [CategoryId],
-      [IDL.Vec(Product)],
-      ['query'],
-    ),
-  'getProductsForGardenCenter' : IDL.Func(
-      [GardenCenterId],
       [IDL.Vec(Product)],
       ['query'],
     ),
@@ -111,7 +94,6 @@ export const idlService = IDL.Service({
     ),
   'initializeSeedData' : IDL.Func([], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'placeOrder' : IDL.Func([IDL.Vec(OrderItem)], [OrderId], []),
   'removeGardenCenter' : IDL.Func([GardenCenterId], [], []),
   'removeGardenCenterMember' : IDL.Func(
       [GardenCenterId, IDL.Principal],
@@ -119,27 +101,13 @@ export const idlService = IDL.Service({
       [],
     ),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-  'searchProducts' : IDL.Func([IDL.Text], [IDL.Vec(Product)], ['query']),
-  'toggleProductActive' : IDL.Func([ProductId, IDL.Bool], [], []),
   'updateGardenCenter' : IDL.Func([GardenCenterId, IDL.Text, IDL.Text], [], []),
-  'updateProduct' : IDL.Func(
-      [
-        ProductId,
-        IDL.Text,
-        IDL.Text,
-        CategoryId,
-        IDL.Nat,
-        IDL.Nat,
-        IDL.Vec(IDL.Text),
-      ],
-      [],
-      [],
-    ),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const CategoryWithSubcategories = IDL.Rec();
   const CategoryId = IDL.Nat;
   const GardenCenterId = IDL.Nat;
   const ProductId = IDL.Nat;
@@ -156,6 +124,7 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'gardenCenterId' : GardenCenterId,
     'description' : IDL.Text,
+    'parentCategoryId' : IDL.Opt(CategoryId),
     'stock' : IDL.Nat,
     'priceCents' : IDL.Nat,
   });
@@ -169,29 +138,22 @@ export const idlFactory = ({ IDL }) => {
     'id' : CategoryId,
     'name' : IDL.Text,
     'description' : IDL.Text,
+    'parentCategoryId' : IDL.Opt(CategoryId),
   });
-  const TeamMember = IDL.Record({
-    'principal' : IDL.Principal,
-    'enabled' : IDL.Bool,
-  });
-  const GardenCenter = IDL.Record({
-    'id' : IDL.Nat,
-    'name' : IDL.Text,
-    'createdAt' : IDL.Int,
-    'teamMembers' : IDL.Vec(TeamMember),
-    'enabled' : IDL.Bool,
-    'location' : IDL.Text,
-  });
-  const OrderItem = IDL.Record({
-    'pricePerItem' : IDL.Nat,
-    'productId' : ProductId,
-    'quantity' : IDL.Nat,
-  });
-  const OrderId = IDL.Nat;
+  CategoryWithSubcategories.fill(
+    IDL.Record({
+      'category' : Category,
+      'subcategories' : IDL.Vec(CategoryWithSubcategories),
+    })
+  );
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addCategory' : IDL.Func([IDL.Text, IDL.Text], [CategoryId], []),
+    'addCategory' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(CategoryId)],
+        [CategoryId],
+        [],
+      ),
     'addGardenCenterMember' : IDL.Func([GardenCenterId, IDL.Principal], [], []),
     'addProduct' : IDL.Func(
         [
@@ -208,31 +170,19 @@ export const idlFactory = ({ IDL }) => {
       ),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'createGardenCenter' : IDL.Func([IDL.Text, IDL.Text], [GardenCenterId], []),
-    'disableGardenCenterMember' : IDL.Func(
-        [GardenCenterId, IDL.Principal],
-        [],
-        [],
-      ),
-    'enableGardenCenterMember' : IDL.Func(
-        [GardenCenterId, IDL.Principal],
-        [],
-        [],
-      ),
     'getActiveProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
     'getCallerRole' : IDL.Func([], [CallerRole], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
-    'getGardenCenter' : IDL.Func([GardenCenterId], [GardenCenter], ['query']),
-    'getGardenCenters' : IDL.Func([], [IDL.Vec(GardenCenter)], ['query']),
+    'getFullCategoryTaxonomy' : IDL.Func(
+        [],
+        [IDL.Vec(CategoryWithSubcategories)],
+        ['query'],
+      ),
     'getProduct' : IDL.Func([ProductId], [Product], ['query']),
     'getProductsForCategory' : IDL.Func(
         [CategoryId],
-        [IDL.Vec(Product)],
-        ['query'],
-      ),
-    'getProductsForGardenCenter' : IDL.Func(
-        [GardenCenterId],
         [IDL.Vec(Product)],
         ['query'],
       ),
@@ -243,7 +193,6 @@ export const idlFactory = ({ IDL }) => {
       ),
     'initializeSeedData' : IDL.Func([], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'placeOrder' : IDL.Func([IDL.Vec(OrderItem)], [OrderId], []),
     'removeGardenCenter' : IDL.Func([GardenCenterId], [], []),
     'removeGardenCenterMember' : IDL.Func(
         [GardenCenterId, IDL.Principal],
@@ -251,23 +200,8 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-    'searchProducts' : IDL.Func([IDL.Text], [IDL.Vec(Product)], ['query']),
-    'toggleProductActive' : IDL.Func([ProductId, IDL.Bool], [], []),
     'updateGardenCenter' : IDL.Func(
         [GardenCenterId, IDL.Text, IDL.Text],
-        [],
-        [],
-      ),
-    'updateProduct' : IDL.Func(
-        [
-          ProductId,
-          IDL.Text,
-          IDL.Text,
-          CategoryId,
-          IDL.Nat,
-          IDL.Nat,
-          IDL.Vec(IDL.Text),
-        ],
         [],
         [],
       ),

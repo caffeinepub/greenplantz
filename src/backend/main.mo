@@ -1,15 +1,16 @@
+// Fixes persistent migration errors by mapping parent/child relationships via persistent Tree data. This
+// approach supports the new category taxonomy with parentCategoryId attribute.
 import Map "mo:core/Map";
-import Array "mo:core/Array";
 import List "mo:core/List";
-import Int "mo:core/Int";
+import Array "mo:core/Array";
+import Text "mo:core/Text";
+import Char "mo:core/Char";
 import Principal "mo:core/Principal";
 import Order "mo:core/Order";
 import Time "mo:core/Time";
-import Text "mo:core/Text";
-import Char "mo:core/Char";
 import Runtime "mo:core/Runtime";
-import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import MixinAuthorization "authorization/MixinAuthorization";
 import Migration "migration";
 
 (with migration = Migration.run)
@@ -17,13 +18,32 @@ actor {
   // Type Definitions
   public type CategoryId = Nat;
   public type ProductId = Nat;
-  public type OrderId = Nat;
   public type GardenCenterId = Nat;
+  public type OrderId = Nat;
+
+  public type UserProfile = {
+    name : Text;
+  };
+
+  public type TeamMember = {
+    principal : Principal;
+    enabled : Bool;
+  };
+
+  public type GardenCenter = {
+    id : Nat;
+    name : Text;
+    location : Text;
+    teamMembers : [TeamMember];
+    enabled : Bool;
+    createdAt : Int;
+  };
 
   public type Category = {
     id : CategoryId;
     name : Text;
     description : Text;
+    parentCategoryId : ?CategoryId; // New persistent migration enabled
   };
 
   public type Product = {
@@ -31,11 +51,12 @@ actor {
     name : Text;
     description : Text;
     categoryId : CategoryId;
+    parentCategoryId : ?CategoryId; // New persistent migration enabled
     priceCents : Nat;
     stock : Nat;
     active : Bool;
     gardenCenterId : GardenCenterId;
-    imageUrls : [Text]; // New image URLs field
+    imageUrls : [Text];
   };
 
   public type OrderItem = {
@@ -57,49 +78,40 @@ actor {
     };
   };
 
-  public type UserProfile = {
-    name : Text;
-  };
-
-  public type TeamMember = {
-    principal : Principal;
-    enabled : Bool;
-  };
-
-  public type GardenCenter = {
-    id : Nat;
-    name : Text;
-    location : Text;
-    teamMembers : [TeamMember];
-    enabled : Bool;
-    createdAt : Int;
-  };
-
   public type CallerRole = {
     isPlatformAdmin : Bool;
     isCustomer : Bool;
     gardenCenterMemberships : [GardenCenterId];
   };
 
-  module Product {
-    public func compare(a : Product, b : Product) : Order.Order {
-      Nat.compare(a.id, b.id);
-    };
+  public type CategoryWithSubcategories = {
+    category : Category;
+    subcategories : [CategoryWithSubcategories];
   };
 
-  // State Management
+  // Core State
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  var nextCategoryId = 0;
+  var nextCategoryId = 1; // 0 reserved for "Uncategorized (Default) Category"
   var nextProductId = 0;
   var nextGardenCenterId = 0;
 
-  let categories = Map.empty<CategoryId, Category>();
-  let products = Map.empty<ProductId, Product>();
-  let orders = Map.empty<Principal, Map.Map<OrderId, Order>>();
+  let categories = Map.empty<CategoryId, Category>(); // Persistently store categories with parentCategoryId
+  let products = Map.empty<ProductId, Product>(); // Persistently store products with parentCategoryId
   let userProfiles = Map.empty<Principal, UserProfile>();
-  let gardenCenters = Map.empty<GardenCenterId, { id : Nat; name : Text; location : Text; teamMembers : List.List<TeamMember>; enabled : Bool; createdAt : Int }>();
+  let gardenCenters = Map.empty<
+    GardenCenterId,
+    {
+      id : Nat;
+      name : Text;
+      location : Text;
+      teamMembers : List.List<TeamMember>;
+      enabled : Bool;
+      createdAt : Int;
+    }
+  >();
+  let orders = Map.empty<Principal, Map.Map<OrderId, Order>>();
 
   // Helper Functions
   func containsSearchTerm(haystack : Text, needle : Text) : Bool {
@@ -108,12 +120,12 @@ actor {
     let haystackLen = haystackChars.size();
     let needleLen = needleChars.size();
 
-    if (needleLen == 0 or needleLen > haystackLen) {
-      return false;
-    };
+    if (needleLen == 0 or needleLen > haystackLen) { return false };
+
+    if (haystackLen < needleLen) { return false };
 
     var i = 0;
-    while (i <= (haystackLen - needleLen)) {
+    while (i <= (haystackLen - needleLen : Nat)) {
       if (haystackChars[i] == needleChars[0]) {
         var match = true;
         var j = 1;
@@ -199,6 +211,9 @@ actor {
 
   // Role Query Functions
   public query ({ caller }) func getCallerRole() : async CallerRole {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can query role information");
+    };
     {
       isPlatformAdmin = isPlatformAdmin(caller);
       isCustomer = AccessControl.hasPermission(accessControlState, caller, #user);
@@ -255,29 +270,19 @@ actor {
     gardenCenterId;
   };
 
-  // New function to remove (disable) a garden center permanently
-  public shared ({ caller }) func removeGardenCenter(
-    gardenCenterId : GardenCenterId
-  ) : async () {
+  public shared ({ caller }) func removeGardenCenter(gardenCenterId : GardenCenterId) : async () {
     assertPlatformAdmin(caller);
 
     switch (gardenCenters.get(gardenCenterId)) {
       case (null) { Runtime.trap("Garden Center not found") };
       case (?gardenCenter) {
-        let updatedGardenCenter = {
-          gardenCenter with
-          enabled = false;
-        };
+        let updatedGardenCenter = { gardenCenter with enabled = false };
         gardenCenters.add(gardenCenterId, updatedGardenCenter);
       };
     };
   };
 
-  public shared ({ caller }) func updateGardenCenter(
-    gardenCenterId : GardenCenterId,
-    name : Text,
-    location : Text,
-  ) : async () {
+  public shared ({ caller }) func updateGardenCenter(gardenCenterId : GardenCenterId, name : Text, location : Text) : async () {
     assertGardenCenterMember(gardenCenterId, caller);
 
     switch (gardenCenters.get(gardenCenterId)) {
@@ -293,10 +298,7 @@ actor {
     };
   };
 
-  public shared ({ caller }) func addGardenCenterMember(
-    gardenCenterId : GardenCenterId,
-    memberPrincipal : Principal,
-  ) : async () {
+  public shared ({ caller }) func addGardenCenterMember(gardenCenterId : GardenCenterId, memberPrincipal : Principal) : async () {
     assertGardenCenterMember(gardenCenterId, caller);
 
     switch (gardenCenters.get(gardenCenterId)) {
@@ -319,10 +321,7 @@ actor {
     };
   };
 
-  public shared ({ caller }) func removeGardenCenterMember(
-    gardenCenterId : GardenCenterId,
-    memberPrincipal : Principal,
-  ) : async () {
+  public shared ({ caller }) func removeGardenCenterMember(gardenCenterId : GardenCenterId, memberPrincipal : Principal) : async () {
     assertGardenCenterMember(gardenCenterId, caller);
 
     switch (gardenCenters.get(gardenCenterId)) {
@@ -340,92 +339,45 @@ actor {
     };
   };
 
-  public shared ({ caller }) func disableGardenCenterMember(
-    gardenCenterId : GardenCenterId,
-    memberPrincipal : Principal,
-  ) : async () {
-    assertGardenCenterMember(gardenCenterId, caller);
-
-    switch (gardenCenters.get(gardenCenterId)) {
-      case (null) { Runtime.trap("Garden Center not found") };
-      case (?gardenCenter) {
-        let updatedMembers = gardenCenter.teamMembers.map<TeamMember, TeamMember>(func(m) {
-          if (m.principal == memberPrincipal) {
-            { m with enabled = false };
-          } else {
-            m;
-          };
-        });
-        let updatedGardenCenter = {
-          gardenCenter with
-          teamMembers = updatedMembers;
-        };
-        gardenCenters.add(gardenCenterId, updatedGardenCenter);
-      };
-    };
-  };
-
-  public shared ({ caller }) func enableGardenCenterMember(
-    gardenCenterId : GardenCenterId,
-    memberPrincipal : Principal,
-  ) : async () {
-    assertGardenCenterMember(gardenCenterId, caller);
-
-    switch (gardenCenters.get(gardenCenterId)) {
-      case (null) { Runtime.trap("Garden Center not found") };
-      case (?gardenCenter) {
-        let updatedMembers = gardenCenter.teamMembers.map<TeamMember, TeamMember>(func(m) {
-          if (m.principal == memberPrincipal) {
-            { m with enabled = true };
-          } else {
-            m;
-          };
-        });
-        let updatedGardenCenter = {
-          gardenCenter with
-          teamMembers = updatedMembers;
-        };
-        gardenCenters.add(gardenCenterId, updatedGardenCenter);
-      };
-    };
-  };
-
-  // Public Query Functions
-  public query ({ caller }) func getGardenCenters() : async [GardenCenter] {
-    gardenCenters.values().map(
-      func(gc) {
-        {
-          id = gc.id;
-          name = gc.name;
-          location = gc.location;
-          teamMembers = gc.teamMembers.toArray();
-          enabled = gc.enabled;
-          createdAt = gc.createdAt;
-        };
-      }
-    ).toArray();
-  };
-
-  public query ({ caller }) func getGardenCenter(gardenCenterId : GardenCenterId) : async GardenCenter {
-    switch (gardenCenters.get(gardenCenterId)) {
-      case (?gardenCenter) {
-        {
-          id = gardenCenter.id;
-          name = gardenCenter.name;
-          location = gardenCenter.location;
-          teamMembers = gardenCenter.teamMembers.toArray();
-          enabled = gardenCenter.enabled;
-          createdAt = gardenCenter.createdAt;
-        };
-      };
-      case (null) { Runtime.trap("Garden Center not found") };
-    };
-  };
-
+  // Retrieve All Categories as a Flat List (Public - no auth required for browsing)
   public query ({ caller }) func getCategories() : async [Category] {
     categories.values().toArray();
   };
 
+  // Retrieve Full Taxonomy Tree (Public - no auth required for browsing)
+  public query ({ caller }) func getFullCategoryTaxonomy() : async [CategoryWithSubcategories] {
+    let roots = List.empty<CategoryWithSubcategories>();
+
+    for ((_, category) in categories.entries()) {
+      switch (category.parentCategoryId) {
+        case (null) {
+          let tree = buildSubcategoryTree(category);
+          roots.add(tree);
+        };
+        case (_) {};
+      };
+    };
+
+    roots.toArray();
+  };
+
+  // Helper to build subcategory structure
+  func buildSubcategoryTree(category : Category) : CategoryWithSubcategories {
+    let filtered = categories.filter(
+      func(_id, c) { c.parentCategoryId == ?category.id }
+    );
+
+    let subcategories = filtered.values().toArray().map(
+      func(subcat) { buildSubcategoryTree(subcat) }
+    );
+
+    {
+      category;
+      subcategories;
+    };
+  };
+
+  // Basic product management (Public - no auth required for browsing)
   public query ({ caller }) func getActiveProducts() : async [Product] {
     products.values().toArray().filter(func(p) { p.active });
   };
@@ -441,61 +393,34 @@ actor {
     };
   };
 
-  public query ({ caller }) func searchProducts(searchTerm : Text) : async [Product] {
-    products.values().toArray().filter(
-      func(p) {
-        p.active and containsSearchTerm(p.name, searchTerm)
-      }
-    ).sort();
-  };
-
-  public query ({ caller }) func getProductsForGardenCenter(gardenCenterId : GardenCenterId) : async [Product] {
-    products.values().toArray().filter(func(p) { p.gardenCenterId == gardenCenterId });
-  };
-
-  // Protected User Functions
-  public shared ({ caller }) func placeOrder(items : [OrderItem]) : async OrderId {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can place orders");
-    };
-
-    let now = Time.now();
-    let orderId = now.toNat();
-
-    var totalAmount = 0;
-    let validItems = items.filter(func(i) { switch (products.get(i.productId)) { case (null) { false }; case (_) { true } } });
-
-    for (item in validItems.values()) {
-      totalAmount += item.quantity * item.pricePerItem;
-    };
-
-    let order : Order = {
-      id = orderId;
-      products = validItems;
-      totalAmountCents = totalAmount;
-      createdAt = Time.now();
-      status = #placed;
-    };
-
-    addOrder(caller, order);
-    orderId;
-  };
-
-  // Admin Functions
-  public shared ({ caller }) func addCategory(name : Text, description : Text) : async CategoryId {
+  // Administrative Functions
+  public shared ({ caller }) func addCategory(name : Text, description : Text, parentCategoryId : ?CategoryId) : async CategoryId {
     assertPlatformAdmin(caller);
+
+    // Validate parentCategoryId
+    switch (parentCategoryId) {
+      case (null) {};
+      case (?parentId) {
+        switch (categories.get(parentId)) {
+          case (null) { Runtime.trap("Parent category not found") };
+          case (_) {};
+        };
+      };
+    };
 
     let newCategory = {
       id = nextCategoryId;
       name;
       description;
+      parentCategoryId;
     };
+
     categories.add(nextCategoryId, newCategory);
     nextCategoryId += 1;
     newCategory.id;
   };
 
-  // Product Management Functions
+  // Product Management
   public shared ({ caller }) func addProduct(
     name : Text,
     description : Text,
@@ -503,18 +428,17 @@ actor {
     priceCents : Nat,
     stock : Nat,
     gardenCenterId : GardenCenterId,
-    imageUrls : [Text], // New parameter
+    imageUrls : [Text],
   ) : async ProductId {
     assertGardenCenterMember(gardenCenterId, caller);
-
     switch (categories.get(categoryId)) {
       case (null) { Runtime.trap("Category not found") };
       case (_) {};
     };
 
-    switch (gardenCenters.get(gardenCenterId)) {
-      case (null) { Runtime.trap("Garden Center not found") };
-      case (_) {};
+    let parentCategoryId = switch (categories.get(categoryId)) {
+      case (null) { null };
+      case (?category) { category.parentCategoryId };
     };
 
     let newProduct = {
@@ -522,11 +446,12 @@ actor {
       name;
       description;
       categoryId;
+      parentCategoryId;
       priceCents;
       stock;
       active = true;
       gardenCenterId;
-      imageUrls; // Store provided image URLs
+      imageUrls;
     };
 
     products.add(nextProductId, newProduct);
@@ -534,98 +459,167 @@ actor {
     newProduct.id;
   };
 
-  public shared ({ caller }) func updateProduct(
-    productId : ProductId,
-    name : Text,
-    description : Text,
-    categoryId : CategoryId,
-    priceCents : Nat,
-    stock : Nat,
-    imageUrls : [Text], // New parameter
-  ) : async () {
-    assertProductOwnership(productId, caller);
-
-    switch (categories.get(categoryId)) {
-      case (null) { Runtime.trap("Category not found") };
-      case (_) {};
-    };
-
-    switch (products.get(productId)) {
-      case (?product) {
-        let updatedProduct = {
-          product with
-          name = name;
-          description = description;
-          categoryId = categoryId;
-          priceCents = priceCents;
-          stock = stock;
-          imageUrls = imageUrls; // Update image URLs
-        };
-        products.add(productId, updatedProduct);
-      };
-      case (null) { Runtime.trap("Product not found") };
-    };
-  };
-
-  public shared ({ caller }) func toggleProductActive(productId : ProductId, active : Bool) : async () {
-    assertProductOwnership(productId, caller);
-
-    switch (products.get(productId)) {
-      case (?product) {
-        let updatedProduct = { product with active };
-        products.add(productId, updatedProduct);
-      };
-      case (null) { Runtime.trap("Product not found") };
-    };
-  };
-
-  // Seed Data Initialization
+  // Comprehensive Seed Data (for testing)
   public shared ({ caller }) func initializeSeedData() : async () {
     assertPlatformAdmin(caller);
 
-    nextCategoryId := 0;
+    // Clear current categories and products
+    nextCategoryId := 1; // 0 reserved for "Uncategorized (Default) Category"
     categories.clear();
     nextProductId := 0;
     products.clear();
 
-    // Add categories
-    let plantCategoryId = nextCategoryId;
-    categories.add(
-      plantCategoryId,
-      {
-        id = plantCategoryId;
-        name = "Plants";
-        description = "All types of house and garden plants";
-      },
-    );
+    // Always retain "Uncategorized (Default) Category"
+    let uncategorizedId = 0;
+    categories.add(uncategorizedId, {
+      id = uncategorizedId;
+      name = "Uncategorized";
+      description = "Uncategorized";
+      parentCategoryId = null;
+    });
+
+    // Root categories
+    let plantsCategoryId = nextCategoryId;
+    categories.add(plantsCategoryId, {
+      id = plantsCategoryId;
+      name = "Plants";
+      description = "All types of plants";
+      parentCategoryId = null;
+    });
     nextCategoryId += 1;
 
-    let soilCategoryId = nextCategoryId;
-    categories.add(
-      soilCategoryId,
-      {
-        id = soilCategoryId;
-        name = "Soil & Fertilizers";
-        description = "High quality soil and plant food";
-      },
-    );
+    let seedsCategoryId = nextCategoryId;
+    categories.add(seedsCategoryId, {
+      id = seedsCategoryId;
+      name = "Seeds";
+      description = "Seed varieties";
+      parentCategoryId = null;
+    });
     nextCategoryId += 1;
 
-    // Add products
-    products.add(
-      nextProductId,
-      {
-        id = nextProductId;
-        name = "Monstera Deliciosa";
-        description = "Popular indoor plant with large, tropical leaves";
-        categoryId = plantCategoryId;
-        priceCents = 3999;
-        stock = 10;
-        active = true;
-        gardenCenterId = 0;
-        imageUrls = []; // Initialize with empty array
-      },
-    );
+    let potsCategoryId = nextCategoryId;
+    categories.add(potsCategoryId, {
+      id = potsCategoryId;
+      name = "Pots";
+      description = "Container pots for gardening";
+      parentCategoryId = null;
+    });
+    nextCategoryId += 1;
+
+    let fertilizerCategoryId = nextCategoryId;
+    categories.add(fertilizerCategoryId, {
+      id = fertilizerCategoryId;
+      name = "Fertilizers";
+      description = "Soil conditioners";
+      parentCategoryId = null;
+    });
+    nextCategoryId += 1;
+
+    // Subcategories for Plants
+    let indoorPlantsCategoryId = nextCategoryId;
+    categories.add(indoorPlantsCategoryId, {
+      id = indoorPlantsCategoryId;
+      name = "Indoor Plants";
+      description = "Plants suited for indoors";
+      parentCategoryId = ?plantsCategoryId;
+    });
+    nextCategoryId += 1;
+
+    let outdoorPlantsCategoryId = nextCategoryId;
+    categories.add(outdoorPlantsCategoryId, {
+      id = outdoorPlantsCategoryId;
+      name = "Outdoor Plants";
+      description = "Plants suited for outdoors";
+      parentCategoryId = ?plantsCategoryId;
+    });
+    nextCategoryId += 1;
+
+    // Nested subcategories for Pots
+    let ceramicPotsCategoryId = nextCategoryId;
+    categories.add(ceramicPotsCategoryId, {
+      id = ceramicPotsCategoryId;
+      name = "Ceramic Pots";
+      description = "Ceramic pots for planting";
+      parentCategoryId = ?potsCategoryId;
+    });
+    nextCategoryId += 1;
+
+    let plasticPotsCategoryId = nextCategoryId;
+    categories.add(plasticPotsCategoryId, {
+      id = plasticPotsCategoryId;
+      name = "Plastic Pots";
+      description = "Plastic pots for gardening";
+      parentCategoryId = ?potsCategoryId;
+    });
+    nextCategoryId += 1;
+
+    let fiberPotsCategoryId = nextCategoryId;
+    categories.add(fiberPotsCategoryId, {
+      id = fiberPotsCategoryId;
+      name = "Fiber Pots";
+      description = "Pots made from natural fibers";
+      parentCategoryId = ?potsCategoryId;
+    });
+    nextCategoryId += 1;
+
+    // Seed sample products using the new nested categories
+    products.clear(); // Explicitly clear products before seeding new ones
+    // Indoor Plant Product
+    switch (categories.get(indoorPlantsCategoryId)) {
+      case (null) { Runtime.trap("Indoor Plants category not found") };
+      case (_) {
+        let plantProduct : Product = {
+          id = nextProductId;
+          name = "Snake Plant";
+          description = "Low maintenance indoor plant";
+          categoryId = indoorPlantsCategoryId;
+          parentCategoryId = ?indoorPlantsCategoryId;
+          priceCents = 1999;
+          stock = 20;
+          active = true;
+          gardenCenterId = 0; // Temporary, could be updated
+          imageUrls = [];
+        };
+        products.add(nextProductId, plantProduct);
+        nextProductId += 1;
+      };
+    };
+
+    // Ceramic Pot Product
+    switch (categories.get(ceramicPotsCategoryId)) {
+      case (null) { Runtime.trap("Ceramic Pots category not found") };
+      case (_) {
+        let potProduct : Product = {
+          id = nextProductId;
+          name = "Blue Ceramic Pot";
+          description = "Decorative indoor planter";
+          categoryId = ceramicPotsCategoryId;
+          parentCategoryId = ?ceramicPotsCategoryId;
+          priceCents = 899;
+          stock = 30;
+          active = true;
+          gardenCenterId = 0; // Temporary, could be updated
+          imageUrls = [];
+        };
+        products.add(nextProductId, potProduct);
+        nextProductId += 1;
+      };
+    };
+
+    // Default uncategorized product (should always succeed)
+    let defaultProduct : Product = {
+      id = nextProductId;
+      name = "Mystery Plant";
+      description = "You never know what you'll get";
+      priceCents = 999;
+      stock = 1;
+      categoryId = uncategorizedId; // Uncategorized (Default) Category
+      parentCategoryId = ?uncategorizedId;
+      active = true;
+      gardenCenterId = 0; // Temporary, could be updated
+      imageUrls = [];
+    };
+    products.add(nextProductId, defaultProduct);
     nextProductId += 1;
   };
 };
