@@ -33,7 +33,13 @@ export default function RequirePlatformAdmin({ children }: RequirePlatformAdminP
   }
 
   if (!role?.isPlatformAdmin) {
-    return <AccessDeniedScreen message="Platform admin privileges are required to access this page." />;
+    const principalId = identity?.getPrincipal().toString();
+    return (
+      <AccessDeniedScreen 
+        message="Platform admin privileges are required to access this page." 
+        principalId={principalId}
+      />
+    );
   }
 
   return <>{children}</>;

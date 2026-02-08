@@ -133,6 +133,7 @@ export interface backendInterface {
     addGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
     addProduct(name: string, description: string, categoryId: CategoryId, priceCents: bigint, stock: bigint, gardenCenterId: GardenCenterId, imageUrls: Array<string>): Promise<ProductId>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    checkUserRole(userPrincipal: Principal): Promise<UserRole>;
     createGardenCenter(name: string, location: string): Promise<GardenCenterId>;
     getActiveProducts(): Promise<Array<Product>>;
     getCallerRole(): Promise<CallerRole>;
@@ -143,10 +144,13 @@ export interface backendInterface {
     getProduct(productId: ProductId): Promise<Product>;
     getProductsForCategory(categoryId: CategoryId): Promise<Array<Product>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    grantAdminAccess(userPrincipal: Principal): Promise<void>;
+    grantUserAccess(userPrincipal: Principal): Promise<void>;
     initializeSeedData(): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     removeGardenCenter(gardenCenterId: GardenCenterId): Promise<void>;
     removeGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
+    revokeAccess(userPrincipal: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateGardenCenter(gardenCenterId: GardenCenterId, name: string, location: string): Promise<void>;
 }
@@ -223,6 +227,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async checkUserRole(arg0: Principal): Promise<UserRole> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.checkUserRole(arg0);
+                return from_candid_UserRole_n4(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.checkUserRole(arg0);
+            return from_candid_UserRole_n4(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async createGardenCenter(arg0: string, arg1: string): Promise<GardenCenterId> {
         if (this.processError) {
             try {
@@ -241,14 +259,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getActiveProducts();
-                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getActiveProducts();
-            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerRole(): Promise<CallerRole> {
@@ -269,28 +287,28 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n9(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n4(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n9(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n4(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCategories(): Promise<Array<Category>> {
@@ -325,42 +343,70 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getProduct(arg0);
-                return from_candid_Product_n5(this._uploadFile, this._downloadFile, result);
+                return from_candid_Product_n7(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getProduct(arg0);
-            return from_candid_Product_n5(this._uploadFile, this._downloadFile, result);
+            return from_candid_Product_n7(this._uploadFile, this._downloadFile, result);
         }
     }
     async getProductsForCategory(arg0: CategoryId): Promise<Array<Product>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getProductsForCategory(arg0);
-                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getProductsForCategory(arg0);
-            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async grantAdminAccess(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.grantAdminAccess(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.grantAdminAccess(arg0);
+            return result;
+        }
+    }
+    async grantUserAccess(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.grantUserAccess(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.grantUserAccess(arg0);
+            return result;
         }
     }
     async initializeSeedData(): Promise<void> {
@@ -419,6 +465,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async revokeAccess(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.revokeAccess(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.revokeAccess(arg0);
+            return result;
+        }
+    }
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
@@ -454,16 +514,16 @@ function from_candid_CategoryWithSubcategories_n15(_uploadFile: (file: ExternalB
 function from_candid_Category_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Category): Category {
     return from_candid_record_n13(_uploadFile, _downloadFile, value);
 }
-function from_candid_Product_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Product): Product {
-    return from_candid_record_n6(_uploadFile, _downloadFile, value);
+function from_candid_Product_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Product): Product {
+    return from_candid_record_n8(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserRole_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n10(_uploadFile, _downloadFile, value);
+function from_candid_UserRole_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n5(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_CategoryId]): CategoryId | null {
+function from_candid_opt_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+function from_candid_opt_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_CategoryId]): CategoryId | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -481,7 +541,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
         id: value.id,
         name: value.name,
         description: value.description,
-        parentCategoryId: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.parentCategoryId))
+        parentCategoryId: record_opt_to_undefined(from_candid_opt_n9(_uploadFile, _downloadFile, value.parentCategoryId))
     };
 }
 function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -496,7 +556,7 @@ function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uin
         subcategories: from_candid_vec_n14(_uploadFile, _downloadFile, value.subcategories)
     };
 }
-function from_candid_record_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _ProductId;
     categoryId: _CategoryId;
     active: boolean;
@@ -527,12 +587,12 @@ function from_candid_record_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint
         name: value.name,
         gardenCenterId: value.gardenCenterId,
         description: value.description,
-        parentCategoryId: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.parentCategoryId)),
+        parentCategoryId: record_opt_to_undefined(from_candid_opt_n9(_uploadFile, _downloadFile, value.parentCategoryId)),
         stock: value.stock,
         priceCents: value.priceCents
     };
 }
-function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -547,8 +607,8 @@ function from_candid_vec_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 function from_candid_vec_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_CategoryWithSubcategories>): Array<CategoryWithSubcategories> {
     return value.map((x)=>from_candid_CategoryWithSubcategories_n15(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Product>): Array<Product> {
-    return value.map((x)=>from_candid_Product_n5(_uploadFile, _downloadFile, x));
+function from_candid_vec_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Product>): Array<Product> {
+    return value.map((x)=>from_candid_Product_n7(_uploadFile, _downloadFile, x));
 }
 function to_candid_UserRole_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n3(_uploadFile, _downloadFile, value);

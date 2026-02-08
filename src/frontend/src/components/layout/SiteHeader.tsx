@@ -47,6 +47,7 @@ export default function SiteHeader() {
   if (role?.isPlatformAdmin) {
     adminLinks.push({ label: 'Admin Products', path: '/admin' });
     adminLinks.push({ label: 'Admin Nurseries', path: '/admin/nurseries' });
+    adminLinks.push({ label: 'Platform Admins', path: '/admin/platform-admins' });
   }
   if (role?.gardenCenterMemberships && role.gardenCenterMemberships.length > 0) {
     adminLinks.push({ label: 'Nursery Dashboard', path: '/nursery/dashboard' });

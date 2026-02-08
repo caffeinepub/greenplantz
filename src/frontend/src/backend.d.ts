@@ -50,6 +50,7 @@ export interface backendInterface {
     addGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
     addProduct(name: string, description: string, categoryId: CategoryId, priceCents: bigint, stock: bigint, gardenCenterId: GardenCenterId, imageUrls: Array<string>): Promise<ProductId>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    checkUserRole(userPrincipal: Principal): Promise<UserRole>;
     createGardenCenter(name: string, location: string): Promise<GardenCenterId>;
     getActiveProducts(): Promise<Array<Product>>;
     getCallerRole(): Promise<CallerRole>;
@@ -60,10 +61,13 @@ export interface backendInterface {
     getProduct(productId: ProductId): Promise<Product>;
     getProductsForCategory(categoryId: CategoryId): Promise<Array<Product>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    grantAdminAccess(userPrincipal: Principal): Promise<void>;
+    grantUserAccess(userPrincipal: Principal): Promise<void>;
     initializeSeedData(): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     removeGardenCenter(gardenCenterId: GardenCenterId): Promise<void>;
     removeGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
+    revokeAccess(userPrincipal: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateGardenCenter(gardenCenterId: GardenCenterId, name: string, location: string): Promise<void>;
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 15,
+  "projectStateVersion": 17,
   "summary": "Build a website and mobile app for GreenPlantz, an online store selling garden products and plants, with separate role-based logins for GreenPlantz team admins, Garden Nursery owners/teams, and Customers, including nursery-level management capabilities.",
   "architectural_notes": [
     "Introduce RBAC with distinct roles (GreenPlantz admin, nursery owner/team, customer) and permissions for product/nursery management and account disabling/removal.",
@@ -208,6 +208,22 @@
         "REQ-33"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-team-portal-and-admin-access-denied-experiences-to-display-the-currently-authenticated-internet-identity-principal-id-in-the-ui-english-labels-so-the-principal-can-be-copied-for-admin-allowlisting",
+      "title": "Update the Team Portal and admin access-denied experiences to display the currently authenticated Internet Identity Principal ID in the UI (English labels), so the Principal can be copied for admin allowlisting.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-platform-admin-ui-screen-to-manage-platform-admins-by-principal-id-add-remove-and-wire-it-to-the-new-backend-allowlist-management-apis",
+      "title": "Add a platform-admin UI screen to manage platform admins by Principal ID (add/remove) and wire it to the new backend allowlist management APIs.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -370,6 +386,14 @@
       "summary": "Update backend seed data initialization to create the full category taxonomy (including subcategories) and ensure seeded products (and/or newly created products) can be assigned to a leaf category (e.g., Indoor Plants, Ceramic Pots).",
       "reqIds": [
         "REQ-31"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-39",
+      "summary": "Add backend APIs for platform-admin allowlist management by Principal so an existing platform admin can grant admin access to the Principal corresponding to greenplantz2020@gmail.com.",
+      "reqIds": [
+        "REQ-35"
       ],
       "status": "pending"
     }

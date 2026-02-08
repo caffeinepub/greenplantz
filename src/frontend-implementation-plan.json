@@ -1,83 +1,73 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Hierarchical product categories (taxonomy) with catalog filtering and nursery product categorization",
+  "title": "Show authenticated Principal ID and add platform-admin allowlist management UI",
   "requirements": [
     {
-      "id": "REQ-30",
-      "summary": "Render and consume a parent/child category taxonomy in the UI without hardcoding category names, enabling downstream filtering and selection experiences.",
+      "id": "REQ-34",
+      "summary": "Display the authenticated Internet Identity Principal ID on Team Portal and access-denied screens for easy copy/paste allowlisting (English labels).",
       "acceptanceCriteria": [
-        "Backend Category type supports representing a category tree (parent category with optional subcategories).",
-        "Backend exposes categories in a way that the frontend can render the parent/child structure without hardcoding names.",
-        "The category taxonomy includes exactly these labels for user-facing text: Plants, Indoor Plants, Outdoor Plants, Seeds, Pots, Ceramic Pots, Plastic Pots, Fiber Pots, Fertilizers (English spelling as written here)."
+        "When a user is authenticated and visits /portal/team, the page shows their Internet Identity Principal ID in a copyable/readable format (e.g., \"Your Principal ID: <principal>\")",
+        "When a user is authenticated but not a platform admin and sees the access denied message, the screen also shows the user’s Principal ID",
+        "All user-facing labels/messages added for this are in English"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/storefront/useCategories.ts",
-          "operation": "modify",
-          "description": "Extend category data access to support fetching the hierarchical taxonomy (e.g., via an additional hook that reads the full tree) while keeping the existing flat categories query for compatibility."
-        },
-        {
-          "path": "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
+          "path": "frontend/src/components/auth/PrincipalIdPanel.tsx",
           "operation": "create",
-          "description": "Add a dedicated React Query hook that loads the hierarchical taxonomy from the backend actor so pages can render parent/child structure without hardcoding. Verify the component's usage instructions before implementing."
+          "description": "Create a small reusable UI panel that renders \"Your Principal ID\" and the current Principal string in a readable format with a \"Copy\" action (uses the authenticated principal from the Internet Identity context when provided by the caller). Use shadcn-ui components (e.g., Card/Button) for consistent styling; verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/utils/categoryTaxonomy.ts",
-          "operation": "create",
-          "description": "Add helpers to work with the taxonomy in the UI (e.g., flatten with depth/indent label, compute descendant category IDs, and determine leaf nodes) to support hierarchical filtering and leaf-only selection."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
+          "path": "frontend/src/components/auth/AccessDeniedScreen.tsx",
           "operation": "modify",
-          "description": "Update the 'Shop by Category' section to consume the hierarchical taxonomy and display only top-level categories (with English labels coming from the backend), linking users into the catalog with a selected category."
+          "description": "Extend AccessDeniedScreen to optionally accept and display the authenticated user's Principal ID (rendered via PrincipalIdPanel) when available, keeping all labels/messages in English. Use the authorization component pattern for Internet Identity principal display; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/RequirePlatformAdmin.tsx",
+          "operation": "modify",
+          "description": "When rendering the access denied state for authenticated non-platform-admin users, pass the current Principal string to AccessDeniedScreen so the Principal ID is shown. Use the authorization component pattern (Internet Identity identity/principal) to source the Principal ID; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/portals/TeamPortalPage.tsx",
+          "operation": "modify",
+          "description": "Update /portal/team to show the authenticated Principal ID (via PrincipalIdPanel or AccessDeniedScreen principal support) in the loading and non-admin flows, ensuring the Principal is readable/copyable and all labels are English. Use the authorization component pattern (Internet Identity identity/principal and role check) to source data; verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-32",
-      "summary": "Update the catalog filtering UI to support hierarchical categories (parents + subcategories) and allow filtering by Pots subcategories while preserving search + filter behavior.",
+      "id": "REQ-36",
+      "summary": "Add a platform-admin-only UI screen to add/remove platform admins by Principal ID, wired to the new backend allowlist management capabilities (English labels).",
       "acceptanceCriteria": [
-        "Catalog page allows users to filter products by any of the requested categories, including subcategories under Plants and Pots.",
-        "Filtering works correctly with search: when a search term is entered, category filtering still narrows results.",
-        "All user-facing filter labels are in English."
+        "There is a platform-admin-only UI to add a Principal ID to the platform admin allowlist",
+        "There is a platform-admin-only UI to remove a Principal ID from the platform admin allowlist (with a confirmation dialog)",
+        "After adding a Principal ID, revisiting /portal/team while authenticated as that Principal routes to the admin area (per existing Team Portal behavior)",
+        "All user-facing labels/messages added for this screen are in English"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/CatalogPage.tsx",
+          "path": "frontend/src/backend.d.ts",
           "operation": "modify",
-          "description": "Replace the flat category tabs with a hierarchical filter UI driven by the fetched taxonomy (e.g., parent groups with selectable subcategories). Use shadcn-ui composed primitives already available in the app to present the hierarchy; verify the component's usage instructions before implementing. Ensure selecting a parent filters by its descendants, and selecting a leaf filters specifically by that leaf (including Pots → Ceramic Pots/Plastic Pots/Fiber Pots). Preserve the existing search behavior and ensure category filtering continues to apply when searchTerm is set."
+          "description": "Update the typed frontend backend interface to include the new platform-admin allowlist management functions introduced by the backend work (add/remove by Principal), so the new UI can call them without type errors."
         },
         {
-          "path": "frontend/src/utils/categoryTaxonomy.ts",
-          "operation": "modify",
-          "description": "Add/adjust taxonomy helper functions used by CatalogPage to (1) find descendants for parent-category filtering and (2) build hierarchical display models for the filter control."
-        }
-      ]
-    },
-    {
-      "id": "REQ-33",
-      "summary": "Update the nursery product creation flow to assign a category/subcategory from the structured taxonomy and submit the selected leaf categoryId to the backend.",
-      "acceptanceCriteria": [
-        "Add Product dialog supports selecting a category from the full taxonomy, including Pots subcategories.",
-        "Submitting a new product sends the selected (sub)category ID to the backend and the created product appears in that category filter on the catalog page.",
-        "All user-facing text in the nursery product categorization UI is in English."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
-          "operation": "modify",
-          "description": "Update the 'Add New Product' dialog category control to use the hierarchical taxonomy and allow selecting from the full set of categories while ensuring the value sent to the existing add-product mutation is a leaf categoryId. Use shadcn-ui Select composition already in the codebase (grouping/indentation as needed) to represent parent/child structure; verify the component's usage instructions before implementing. Keep all user-facing text in English."
+          "path": "frontend/src/hooks/admin/usePlatformAdminAllowlist.ts",
+          "operation": "create",
+          "description": "Create React Query mutations for adding/removing platform admins by Principal ID and invalidate role-related queries (e.g., callerRole) on success so updated admin status is reflected when revisiting /portal/team. Use the authorization component pattern for role refresh behavior after allowlist changes; verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
-          "operation": "modify",
-          "description": "Ensure the taxonomy hook exposes a convenient shape for the nursery product category picker (e.g., stable query key, loading states) so the dialog can reliably populate hierarchical options."
+          "path": "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx",
+          "operation": "create",
+          "description": "Create a platform-admin-only management screen (wrapped with RequirePlatformAdmin) with: (1) an input to add a Principal ID and submit to the backend, and (2) an input to remove a Principal ID with a shadcn-ui confirmation dialog before executing removal. Ensure all labels/messages are English and validate Principal format client-side before calling the backend. Use shadcn-ui components (Input/Button/AlertDialog/Card) for UI; verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/utils/categoryTaxonomy.ts",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add/adjust a helper that returns leaf-only options (with depth/indent labels) for use in nursery product category selection so only valid leaf categories are submitted as categoryId."
+          "description": "Register and wire a new admin route (e.g., /admin/platform-admins) to AdminPlatformAdminsPage so it is navigable and not orphaned."
+        },
+        {
+          "path": "frontend/src/components/layout/SiteHeader.tsx",
+          "operation": "modify",
+          "description": "Add a platform-admin-only navigation link to the new platform admin management screen under existing admin links, keeping the public navigation unchanged. Use the existing role-based rendering pattern; verify the component's usage instructions before implementing."
         }
       ]
     }

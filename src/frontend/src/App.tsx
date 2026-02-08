@@ -12,6 +12,7 @@ import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import AdminProductsPage from './pages/admin/AdminProductsPage';
 import AdminNurseriesPage from './pages/admin/AdminNurseriesPage';
+import AdminPlatformAdminsPage from './pages/admin/AdminPlatformAdminsPage';
 import TeamPortalPage from './pages/portals/TeamPortalPage';
 import NurseryPortalPage from './pages/portals/NurseryPortalPage';
 import CustomerPortalPage from './pages/portals/CustomerPortalPage';
@@ -75,6 +76,12 @@ const adminNurseriesRoute = createRoute({
   component: AdminNurseriesPage,
 });
 
+const adminPlatformAdminsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/platform-admins',
+  component: AdminPlatformAdminsPage,
+});
+
 const teamPortalRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/portal/team',
@@ -109,6 +116,7 @@ const routeTree = rootRoute.addChildren([
   myOrdersRoute,
   adminRoute,
   adminNurseriesRoute,
+  adminPlatformAdminsRoute,
   teamPortalRoute,
   nurseryPortalRoute,
   customerPortalRoute,

@@ -1,105 +1,75 @@
 {
   "kind": "build_request",
-  "title": "Add structured product categories with subcategories and enable filtering + nursery product categorization",
+  "title": "Grant platform admin access for greenplantz2020@gmail.com (via Internet Identity principal allowlisting)",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-30",
-      "text": "Implement a structured product category taxonomy that supports parent/child relationships so the catalog can represent and filter by: Plants → (Indoor Plants, Outdoor Plants), Seeds, Pots → (Ceramic Pots, Plastic Pots, Fiber Pots), and Fertilizers.",
-      "target": "both",
+      "id": "REQ-34",
+      "text": "Update the Team Portal and admin access-denied experiences to display the currently authenticated Internet Identity Principal ID in the UI (English labels), so the Principal can be copied for admin allowlisting.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-5"
         ],
         "quotes": [
-          "also include categorize the shopping  and filter option.\ncatagories by plants, indoors plants , outdoor plants,  seeds, pots, sub topic of pots ceramic pots, plastic pots , fiber pots, fertilizers"
+          "can you do one thing greenplantz2020@gmail.com as admin"
         ]
       },
       "acceptanceCriteria": [
-        "Backend Category type supports representing a category tree (parent category with optional subcategories).",
-        "Backend exposes categories in a way that the frontend can render the parent/child structure without hardcoding names.",
-        "The category taxonomy includes exactly these labels for user-facing text: Plants, Indoor Plants, Outdoor Plants, Seeds, Pots, Ceramic Pots, Plastic Pots, Fiber Pots, Fertilizers (English spelling as written here)."
+        "When a user is authenticated and visits /portal/team, the page shows their Internet Identity Principal ID in a copyable/readable format (e.g., \"Your Principal ID: <principal>\")",
+        "When a user is authenticated but not a platform admin and sees the access denied message, the screen also shows the user’s Principal ID",
+        "All user-facing labels/messages added for this are in English"
       ]
     },
     {
-      "id": "REQ-31",
-      "text": "Update backend seed data initialization to create the full category taxonomy (including subcategories) and ensure seeded products (and/or newly created products) can be assigned to a leaf category (e.g., Indoor Plants, Ceramic Pots).",
+      "id": "REQ-35",
+      "text": "Add backend APIs for platform-admin allowlist management by Principal so an existing platform admin can grant admin access to the Principal corresponding to greenplantz2020@gmail.com.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-5"
         ],
         "quotes": [
-          "catagories by plants, indoors plants , outdoor plants,  seeds, pots, sub topic of pots ceramic pots, plastic pots , fiber pots, fertilizers"
+          "can you do one thing greenplantz2020@gmail.com as admin"
         ]
       },
       "acceptanceCriteria": [
-        "Calling the existing seed initializer results in categories that include the requested parents and subcategories.",
-        "At least one seeded product is assigned to one of the requested categories so storefront filtering can be verified end-to-end.",
-        "Existing public product listing endpoints continue to work with the updated category model."
+        "Backend exposes an admin-only method to add a platform admin by Principal (and persistently retain it across upgrades)",
+        "Backend exposes an admin-only method to remove a platform admin by Principal",
+        "After the Principal for the greenplantz2020@gmail.com Internet Identity is added via the new API, calls to getCallerRole for that Principal return isPlatformAdmin = true",
+        "Non-admin callers cannot add/remove platform admins (backend traps or returns an authorization error)"
       ]
     },
     {
-      "id": "REQ-32",
-      "text": "Update the storefront catalog filtering UI (frontend/src/pages/CatalogPage.tsx) to support filtering by the new hierarchical categories (parents + subcategories), including the ability to filter specifically by Pots subcategories (Ceramic Pots, Plastic Pots, Fiber Pots).",
+      "id": "REQ-36",
+      "text": "Add a platform-admin UI screen to manage platform admins by Principal ID (add/remove) and wire it to the new backend allowlist management APIs.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-5"
         ],
         "quotes": [
-          "also include categorize the shopping  and filter option.\ncatagories by plants, indoors plants , outdoor plants,  seeds, pots, sub topic of pots ceramic pots, plastic pots , fiber pots, fertilizers"
+          "can you do one thing greenplantz2020@gmail.com as admin"
         ]
       },
       "acceptanceCriteria": [
-        "Catalog page allows users to filter products by any of the requested categories, including subcategories under Plants and Pots.",
-        "Filtering works correctly with search: when a search term is entered, category filtering still narrows results.",
-        "All user-facing filter labels are in English."
-      ]
-    },
-    {
-      "id": "REQ-33",
-      "text": "Update the nursery product creation flow (frontend/src/pages/nursery/NurseryDashboardPage.tsx) so garden nursery team members can assign a category/subcategory from the structured taxonomy when adding a product, and ensure the selected category is sent to the backend as the product’s categoryId.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "and also when a garden nursery team add product they should be able to catagorize it."
-        ]
-      },
-      "acceptanceCriteria": [
-        "Add Product dialog supports selecting a category from the full taxonomy, including Pots subcategories.",
-        "Submitting a new product sends the selected (sub)category ID to the backend and the created product appears in that category filter on the catalog page.",
-        "All user-facing text in the nursery product categorization UI is in English."
+        "There is a platform-admin-only UI to add a Principal ID to the platform admin allowlist",
+        "There is a platform-admin-only UI to remove a Principal ID from the platform admin allowlist (with a confirmation dialog)",
+        "After adding a Principal ID, revisiting /portal/team while authenticated as that Principal routes to the admin area (per existing Team Portal behavior)",
+        "All user-facing labels/messages added for this screen are in English"
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, and anything under frontend/src/components/ui; compose components instead.",
-    "Use existing auth/role guards and access control patterns; do not introduce third-party authentication."
+    "Backend must remain a single Motoko actor with all logic in backend/main.mo (per project architecture).",
+    "Do not edit any frontend paths listed in SYSTEM_CONTEXT.frontend.immutablePaths; compose existing UI components instead."
   ],
   "nonGoals": [
-    "Fixing Team/Admin portal access or displaying the Internet Identity principal ID in the UI (not requested in the latest user message).",
-    "Adding new payment providers, external databases, or non-Internet-Computer hosting/deploy changes.",
-    "Changing product image URL functionality beyond what already exists."
+    "Do not implement email-based authentication or email verification (Internet Identity principals are the source of truth).",
+    "Do not add third-party authentication providers or external databases/services."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [
-      "Use English for all user-facing text."
-    ],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

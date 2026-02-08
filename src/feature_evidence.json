@@ -2,12 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-a-structured-product-category-taxonomy-that-supports-parent-child-relationships-so-the-catalog-can-represent-and-filter-by-plants-indoor-plants-outdoor-plants-seeds-pots-ceramic-pots-plastic-pots-fiber-pots-and-fertilizers",
-      "featureTitle": "Implement a structured product category taxonomy that supports parent/child relationships so the catalog can represent and filter by: Plants → (Indoor Plants, Outdoor Plants), Seeds, Pots → (Ceramic Pots, Plastic Pots, Fiber Pots), and Fertilizers.",
+      "featureId": "feature-update-the-team-portal-and-admin-access-denied-experiences-to-display-the-currently-authenticated-internet-identity-principal-id-in-the-ui-english-labels-so-the-principal-can-be-copied-for-admin-allowlisting",
+      "featureTitle": "Update the Team Portal and admin access-denied experiences to display the currently authenticated Internet Identity Principal ID in the UI (English labels), so the Principal can be copied for admin allowlisting.",
       "files": [
-        "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/utils/categoryTaxonomy.ts"
+        "frontend/src/components/auth/AccessDeniedScreen.tsx",
+        "frontend/src/components/auth/PrincipalIdPanel.tsx",
+        "frontend/src/components/auth/RequirePlatformAdmin.tsx",
+        "frontend/src/pages/portals/TeamPortalPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,16 +19,18 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-30"
+        "REQ-34"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-storefront-catalog-filtering-ui-frontend-src-pages-catalogpage-tsx-to-support-filtering-by-the-new-hierarchical-categories-parents-subcategories-including-the-ability-to-filter-specifically-by-pots-subcategories-ceramic-pots-plastic-pots-fiber-pots",
-      "featureTitle": "Update the storefront catalog filtering UI (frontend/src/pages/CatalogPage.tsx) to support filtering by the new hierarchical categories (parents + subcategories), including the ability to filter specifically by Pots subcategories (Ceramic Pots, Plastic Pots, Fiber Pots).",
+      "featureId": "feature-add-a-platform-admin-ui-screen-to-manage-platform-admins-by-principal-id-add-remove-and-wire-it-to-the-new-backend-allowlist-management-apis",
+      "featureTitle": "Add a platform-admin UI screen to manage platform admins by Principal ID (add/remove) and wire it to the new backend allowlist management APIs.",
       "files": [
-        "frontend/src/pages/CatalogPage.tsx",
-        "frontend/src/utils/categoryTaxonomy.ts"
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/SiteHeader.tsx",
+        "frontend/src/hooks/admin/usePlatformAdminAllowlist.ts",
+        "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -38,28 +41,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-32"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-nursery-product-creation-flow-frontend-src-pages-nursery-nurserydashboardpage-tsx-so-garden-nursery-team-members-can-assign-a-category-subcategory-from-the-structured-taxonomy-when-adding-a-product-and-ensure-the-selected-category-is-sent-to-the-backend-as-the-product-s-categoryid",
-      "featureTitle": "Update the nursery product creation flow (frontend/src/pages/nursery/NurseryDashboardPage.tsx) so garden nursery team members can assign a category/subcategory from the structured taxonomy when adding a product, and ensure the selected category is sent to the backend as the product’s categoryId.",
-      "files": [
-        "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
-        "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
-        "frontend/src/utils/categoryTaxonomy.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-33"
+        "REQ-36"
       ],
       "confidence": "high"
     }

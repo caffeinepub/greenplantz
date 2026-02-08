@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add a hierarchical product category taxonomy and use it for catalog filtering and nursery product categorization.
+**Goal:** Allow existing platform admins to grant/revoke platform admin access by Internet Identity Principal, and make it easy for users to copy their own Principal ID for allowlisting.
 
 **Planned changes:**
-- Implement a backend Category model that supports parent/child relationships and can be returned to the frontend as a tree (no hardcoded category names in UI).
-- Seed the full category taxonomy with these exact labels: Plants, Indoor Plants, Outdoor Plants, Seeds, Pots, Ceramic Pots, Plastic Pots, Fiber Pots, Fertilizers; and assign at least one seeded product to a leaf category.
-- Update the catalog page filtering UI to filter by parent categories and subcategories (including Pots subcategories) and ensure filtering works alongside search.
-- Update the nursery “Add Product” flow to allow selecting a category/subcategory from the taxonomy and submit the selected categoryId to the backend.
+- Show the currently authenticated Internet Identity Principal ID (English label) on `/portal/team` in a readable/copyable format.
+- Show the currently authenticated Internet Identity Principal ID on the admin access-denied screen (English label) when a signed-in user is not a platform admin.
+- Add admin-only backend APIs to add/remove platform admin Principals, with persistent storage across upgrades.
+- Add a platform-admin-only UI screen to manage platform admins by Principal ID (add/remove with confirmation) wired to the new backend APIs.
 
-**User-visible outcome:** Users can browse and filter the shop catalog by the new category/subcategory structure, and nursery team members can assign a category when adding products so they appear under the correct filters.
+**User-visible outcome:** Users can see and copy their Principal ID from the Team Portal and access-denied screens, and platform admins can add/remove platform admin access for specific Principal IDs via a dedicated admin UI.

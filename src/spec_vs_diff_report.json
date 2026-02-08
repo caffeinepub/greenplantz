@@ -1,99 +1,48 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T14:06:51.144Z",
-  "summary": "Diff adds a hierarchical category model (parentCategoryId + CategoryWithSubcategories), frontend taxonomy utilities/hooks, and updates CatalogPage to filter via taxonomy descendants. However, the diff summary does not show backend seed taxonomy creation with the exact required labels, nor does it show the backend API that exposes the full taxonomy tree to the frontend, and nursery add-product submission wiring is truncated/unclear.",
+  "generatedAt": "2026-02-08T14:16:22.233Z",
+  "summary": "REQ-34 appears implemented via a reusable PrincipalIdPanel shown on Team Portal and Access Denied screens. A new platform-admin management page and hooks were added (REQ-36). Backend allowlist management APIs required by REQ-35 are not evidenced in the provided backend diff snippet, and the backend changes shown appear unrelated to the request (category taxonomy/migration).",
   "missing_requirements": [
     {
-      "id": "REQ-30",
-      "requirement": "Backend exposes categories in a way that the frontend can render the parent/child structure without hardcoding names (e.g., a getFullCategoryTaxonomy-style API returning a tree).",
-      "reason": "Frontend hook calls actor.getFullCategoryTaxonomy(), but the diff summary for backend/main.mo is truncated and does not provide evidence that this method exists/returns the required structure.",
+      "id": "REQ-35",
+      "requirement": "Add backend APIs for platform-admin allowlist management by Principal (admin-only add/remove, persistent across upgrades, and reflected in getCallerRole).",
+      "reason": "The frontend calls actor.grantAdminAccess(...) and actor.revokeAccess(...), but the backend diff snippet for backend/main.mo does not show any new public methods for adding/removing platform admins, nor any stable/persistent storage updates for the allowlist or getCallerRole behavior changes. With the provided truncated excerpt, implementation cannot be confirmed.",
       "evidence": [
-        "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
-        "backend/main.mo (truncated)"
+        "backend/main.mo",
+        "frontend/src/hooks/admin/usePlatformAdminAllowlist.ts"
       ]
     },
     {
-      "id": "REQ-30",
-      "requirement": "Category taxonomy includes exactly these user-facing labels: Plants, Indoor Plants, Outdoor Plants, Seeds, Pots, Ceramic Pots, Plastic Pots, Fiber Pots, Fertilizers.",
-      "reason": "No seed/category creation code or constants showing these exact labels appear in the provided diff summary; backend/main.mo is truncated before any seed/taxonomy initialization is shown.",
+      "id": "REQ-36",
+      "requirement": "Remove platform admins via UI with a confirmation dialog.",
+      "reason": "AdminPlatformAdminsPage imports AlertDialog components, but the file is truncated before showing that the confirmation dialog is actually wired to the remove action. Cannot confirm from the provided diff summary.",
       "evidence": [
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-31",
-      "requirement": "Update backend seed data initialization to create the full category taxonomy (including subcategories) and ensure at least one seeded product is assigned to one of the requested categories.",
-      "reason": "Diff summary shows migration/type changes but does not show initializeSeedData (or equivalent) being updated to create the requested category tree or assign a seeded product to a leaf category.",
-      "evidence": [
-        "backend/main.mo (truncated)",
-        "frontend/src/hooks/admin/useAdminProducts.ts (calls actor.initializeSeedData but does not show backend implementation)"
-      ]
-    },
-    {
-      "id": "REQ-33",
-      "requirement": "Submitting a new product from NurseryDashboardPage sends the selected (sub)category ID to the backend as the product’s categoryId.",
-      "reason": "NurseryDashboardPage shows taxonomy fetching and a productCategoryId state, but the diff summary is truncated before showing the add-product submit handler that passes productCategoryId into useAddGardenCenterProduct().",
-      "evidence": [
-        "frontend/src/pages/nursery/NurseryDashboardPage.tsx (truncated)",
-        "frontend/src/hooks/nursery/useGardenCenterProducts.ts (mutation accepts categoryId and passes it to actor.addProduct)"
+        "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added a persistent migration module and actor migration wiring to map old categories/products to new structures.",
-      "reason": "BuildRequest does not ask for persistent migration infrastructure; it only constrains backend to a single actor and requests taxonomy changes.",
+      "description": "Backend changes related to category taxonomy/persistent migration (parentCategoryId on Category/Product, migration error fixes).",
+      "reason": "Not requested by REQ-34/35/36; the BuildRequest is about platform admin allowlisting and displaying Principal IDs.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (\"with migration = Migration.run\")"
-      ]
-    },
-    {
-      "description": "Extended Product type/state with parentCategoryId field and migrated products to include parentCategoryId.",
-      "reason": "BuildRequest requires hierarchical categories; it does not request parent/child relationships on products.",
-      "evidence": [
-        "backend/main.mo (Product includes parentCategoryId)",
-        "backend/migration.mo (NewProduct includes parentCategoryId)"
-      ]
-    },
-    {
-      "description": "Added/modified multiple admin/nursery hooks with explicit placeholders for missing backend methods (toggle active, update product, get garden centers, place order).",
-      "reason": "BuildRequest is focused on hierarchical categories, catalog filtering, and nursery categorization; these additional admin/order workflow placeholders are unrelated.",
-      "evidence": [
-        "frontend/src/hooks/admin/useAdminProducts.ts",
-        "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts",
-        "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
-        "frontend/src/hooks/nursery/useGardenCenterProducts.ts",
-        "frontend/src/hooks/nursery/useMyGardenCenter.ts",
-        "frontend/src/hooks/orders/usePlaceOrder.ts"
-      ]
-    },
-    {
-      "description": "Homepage updated to fetch and display top-level categories from the taxonomy.",
-      "reason": "REQ-30 to REQ-33 do not request changes to HomePage category browsing UI.",
-      "evidence": [
-        "frontend/src/pages/HomePage.tsx (truncated)"
+        "backend/main.mo"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.68,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/hooks/admin/useAdminProducts.ts",
-    "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts",
-    "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
-    "frontend/src/hooks/nursery/useGardenCenterProducts.ts",
-    "frontend/src/hooks/nursery/useMyGardenCenter.ts",
-    "frontend/src/hooks/orders/usePlaceOrder.ts",
-    "frontend/src/hooks/storefront/useFullCategoryTaxonomy.ts",
-    "frontend/src/hooks/storefront/useProducts.ts",
-    "frontend/src/pages/CatalogPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
-    "frontend/src/utils/categoryTaxonomy.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/auth/AccessDeniedScreen.tsx",
+    "frontend/src/components/auth/PrincipalIdPanel.tsx",
+    "frontend/src/components/auth/RequirePlatformAdmin.tsx",
+    "frontend/src/components/layout/SiteHeader.tsx",
+    "frontend/src/hooks/admin/usePlatformAdminAllowlist.ts",
+    "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx",
+    "frontend/src/pages/portals/TeamPortalPage.tsx",
     "project_state.json"
   ]
 }

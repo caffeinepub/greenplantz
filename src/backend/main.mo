@@ -11,9 +11,7 @@ import Time "mo:core/Time";
 import Runtime "mo:core/Runtime";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
   // Type Definitions
   public type CategoryId = Nat;
@@ -207,6 +205,35 @@ actor {
     };
     userOrders.add(order.id, order);
     orders.add(caller, userOrders);
+  };
+
+  // Platform Admin Management Functions
+  public shared ({ caller }) func grantAdminAccess(userPrincipal : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can grant admin access");
+    };
+    AccessControl.assignRole(accessControlState, caller, userPrincipal, #admin);
+  };
+
+  public shared ({ caller }) func grantUserAccess(userPrincipal : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can grant user access");
+    };
+    AccessControl.assignRole(accessControlState, caller, userPrincipal, #user);
+  };
+
+  public shared ({ caller }) func revokeAccess(userPrincipal : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can revoke access");
+    };
+    AccessControl.assignRole(accessControlState, caller, userPrincipal, #guest);
+  };
+
+  public query ({ caller }) func checkUserRole(userPrincipal : Principal) : async AccessControl.UserRole {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can check user roles");
+    };
+    AccessControl.getUserRole(accessControlState, userPrincipal);
   };
 
   // Role Query Functions

@@ -53,6 +53,7 @@ export interface _SERVICE {
     ProductId
   >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'checkUserRole' : ActorMethod<[Principal], UserRole>,
   'createGardenCenter' : ActorMethod<[string, string], GardenCenterId>,
   'getActiveProducts' : ActorMethod<[], Array<Product>>,
   'getCallerRole' : ActorMethod<[], CallerRole>,
@@ -63,6 +64,8 @@ export interface _SERVICE {
   'getProduct' : ActorMethod<[ProductId], Product>,
   'getProductsForCategory' : ActorMethod<[CategoryId], Array<Product>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'grantAdminAccess' : ActorMethod<[Principal], undefined>,
+  'grantUserAccess' : ActorMethod<[Principal], undefined>,
   'initializeSeedData' : ActorMethod<[], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'removeGardenCenter' : ActorMethod<[GardenCenterId], undefined>,
@@ -70,6 +73,7 @@ export interface _SERVICE {
     [GardenCenterId, Principal],
     undefined
   >,
+  'revokeAccess' : ActorMethod<[Principal], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'updateGardenCenter' : ActorMethod<
     [GardenCenterId, string, string],
