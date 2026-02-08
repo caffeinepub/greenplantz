@@ -1,75 +1,48 @@
 {
   "kind": "build_request",
-  "title": "Grant platform admin access for greenplantz2020@gmail.com (via Internet Identity principal allowlisting)",
+  "title": "Allowlist additional Platform Admin Principal ID",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-34",
-      "text": "Update the Team Portal and admin access-denied experiences to display the currently authenticated Internet Identity Principal ID in the UI (English labels), so the Principal can be copied for admin allowlisting.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-5"
-        ],
-        "quotes": [
-          "can you do one thing greenplantz2020@gmail.com as admin"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When a user is authenticated and visits /portal/team, the page shows their Internet Identity Principal ID in a copyable/readable format (e.g., \"Your Principal ID: <principal>\")",
-        "When a user is authenticated but not a platform admin and sees the access denied message, the screen also shows the user’s Principal ID",
-        "All user-facing labels/messages added for this are in English"
-      ]
-    },
-    {
-      "id": "REQ-35",
-      "text": "Add backend APIs for platform-admin allowlist management by Principal so an existing platform admin can grant admin access to the Principal corresponding to greenplantz2020@gmail.com.",
+      "id": "REQ-54",
+      "text": "Add the Internet Identity Principal ID \"7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae\" to the backend platform-admin allowlist so this principal is recognized as a Platform Admin (isPlatformAdmin = true) and can access the Team/Admin portal admin screens after signing in.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-5"
+          "msg-1"
         ],
         "quotes": [
-          "can you do one thing greenplantz2020@gmail.com as admin"
+          "also add 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes an admin-only method to add a platform admin by Principal (and persistently retain it across upgrades)",
-        "Backend exposes an admin-only method to remove a platform admin by Principal",
-        "After the Principal for the greenplantz2020@gmail.com Internet Identity is added via the new API, calls to getCallerRole for that Principal return isPlatformAdmin = true",
-        "Non-admin callers cannot add/remove platform admins (backend traps or returns an authorization error)"
-      ]
-    },
-    {
-      "id": "REQ-36",
-      "text": "Add a platform-admin UI screen to manage platform admins by Principal ID (add/remove) and wire it to the new backend allowlist management APIs.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-5"
-        ],
-        "quotes": [
-          "can you do one thing greenplantz2020@gmail.com as admin"
-        ]
-      },
-      "acceptanceCriteria": [
-        "There is a platform-admin-only UI to add a Principal ID to the platform admin allowlist",
-        "There is a platform-admin-only UI to remove a Principal ID from the platform admin allowlist (with a confirmation dialog)",
-        "After adding a Principal ID, revisiting /portal/team while authenticated as that Principal routes to the admin area (per existing Team Portal behavior)",
-        "All user-facing labels/messages added for this screen are in English"
+        "After deployment/upgrade, signing in with Principal ID 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae results in getCallerRole().isPlatformAdmin returning true.",
+        "With that principal authenticated, the user can access the Team/Admin portal and load admin-only pages guarded by platform-admin checks (no access denied due to missing allowlist entry).",
+        "No existing platform-admin allowlist entries are removed or altered as part of this change."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor with all logic in backend/main.mo (per project architecture).",
-    "Do not edit any frontend paths listed in SYSTEM_CONTEXT.frontend.immutablePaths; compose existing UI components instead."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Do not implement email-based authentication or email verification (Internet Identity principals are the source of truth).",
-    "Do not add third-party authentication providers or external databases/services."
+    "Implementing the admin order authorization/assignment workflow.",
+    "Adding or changing customer profile fields.",
+    "Updating branding/logo assets or header/footer UI."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

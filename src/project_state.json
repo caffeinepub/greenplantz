@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 17,
+  "projectStateVersion": 35,
   "summary": "Build a website and mobile app for GreenPlantz, an online store selling garden products and plants, with separate role-based logins for GreenPlantz team admins, Garden Nursery owners/teams, and Customers, including nursery-level management capabilities.",
   "architectural_notes": [
     "Introduce RBAC with distinct roles (GreenPlantz admin, nursery owner/team, customer) and permissions for product/nursery management and account disabling/removal.",
@@ -10,12 +10,18 @@
     "Nursery product management UI must support attaching/displaying product photos (image upload/selection and rendering on product details).",
     "GreenPlantz Team/Admin UI should include nursery/shop listing with drill-down to products and an action to remove a nursery/shop.",
     "Update SiteFooter contact/business info area to also display GreenPlantz service areas/locations text: \"Kerala | Karnataka | Tamil Nadu | Andra Pradesh\".",
-    "Adopt a hierarchical category taxonomy (e.g., Plants → Indoor/Outdoor; Pots → Ceramic/Plastic/Fiber; plus Seeds and Fertilizers) and ensure nursery product creation/edit flows include category/subcategory selection mapped to backend category IDs."
+    "Adopt a hierarchical category taxonomy (e.g., Plants → Indoor/Outdoor; Pots → Ceramic/Plastic/Fiber; plus Seeds and Fertilizers) and ensure nursery product creation/edit flows include category/subcategory selection mapped to backend category IDs.",
+    "Ensure SiteHeader logo <img> uses responsive sizing (CSS width/height/max-height/object-fit) so the GreenPlantz logo renders at the required size consistently across devices.",
+    "Header logo must reference an existing static asset under frontend/public (e.g., /public/assets/generated) and the build must include that directory/file so /assets/generated/... URLs resolve correctly in production."
   ],
   "known_issues": [
-    "Admin portal access issue: user reports the Team/Admin portal stays blank / shows Access Denied and the UI does not display the signed-in Internet Identity principal ID anywhere, preventing admin allowlisting."
+    "Admin portal access issue: user reports the Team/Admin portal stays blank / shows Access Denied and the UI does not display the signed-in Internet Identity principal ID anywhere, preventing admin allowlisting.",
+    "Branding regression: deployed build does not reflect the updated logo (user reports the logo has not changed after deployment).",
+    "Header logo sizing is not correct; needs adjustment to the required dimensions/responsive display.",
+    "Broken header logo: SiteHeader references /assets/generated/greenplantz-header-logo.dim_504x112.cb_20260208_01.png but the corresponding /public/assets/generated folder (and file) is missing, causing a broken-image icon in the deployed UI.",
+    "Logo issue persists after latest build/deploy attempt (user reports it is still not corrected)."
   ],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
       "id": "feature-create-a-greenplantz-storefront-web-app-that-is-fully-responsive-mobile-first-and-functions-as-the-website-and-app-experience-single-react-app-with-layouts-optimized-for-desktop-tablet-and-phone",
@@ -224,6 +230,118 @@
         "REQ-36"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-the-provided-greenplantz-full-logo-image-as-a-static-asset-and-update-the-site-header-to-use-it-as-the-primary-brand-logo",
+      "title": "Add the provided GreenPlantz full logo image as a static asset and update the site header to use it as the primary brand logo.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-provided-gp-mark-as-the-site-favicon-by-wiring-favicon-assets-into-frontend-index-html",
+      "title": "Add the provided GP mark as the site favicon by wiring favicon assets into frontend/index.html.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-site-header-uses-the-newly-provided-greenplantz-logo-assets-so-that-the-visible-logo-changes-on-the-deployed-build-not-the-old-cached-previous-logo",
+      "title": "Ensure the site header uses the newly provided GreenPlantz logo assets so that the visible logo changes on the deployed build (not the old cached/previous logo).",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-two-uploaded-images-image-2-png-and-image-3-png-into-frontend-static-assets-under-frontend-public-assets-generated-and-update-frontend-src-components-layout-siteheader-tsx-to-reference-the-correct-logo-file-s-from-assets-generated",
+      "title": "Add the two uploaded images (image-2.png and image-3.png) into frontend static assets under frontend/public/assets/generated and update frontend/src/components/layout/SiteHeader.tsx to reference the correct logo file(s) from /assets/generated.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-cache-busting-strategy-for-the-header-logo-so-that-when-the-logo-asset-is-updated-clients-reliably-receive-the-new-version-e-g-by-using-a-new-filename-and-updating-the-reference-in-frontend-src-components-layout-siteheader-tsx-or-by-appending-a-version-query-parameter-to-the-logo-url",
+      "title": "Implement a cache-busting strategy for the header logo so that when the logo asset is updated, clients reliably receive the new version (e.g., by using a new filename and updating the reference in frontend/src/components/layout/SiteHeader.tsx, or by appending a version query parameter to the logo URL).",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-newly-uploaded-logo-image-file-greenplantz-final-straight-logo-back-ground-removed-png-to-frontend-static-assets-under-frontend-public-assets-generated-with-a-cache-busting-filename-and-update-the-site-header-logo-img-frontend-src-components-layout-siteheader-tsx-to-use-this-new-asset-as-its-src-replacing-the-current-theme-based-logosrc-apply-this-change-only-to-the-header-logo-image-element-xpath-html-body-div-div-header-div-a-img",
+      "title": "Add the newly uploaded logo image file \"greenplantz final straight logo back ground removed.png\" to frontend static assets under frontend/public/assets/generated with a cache-busting filename, and update the Site Header logo <img> (frontend/src/components/layout/SiteHeader.tsx) to use this new asset as its src (replacing the current theme-based logoSrc). Apply this change only to the header logo image element (XPath: /html/body/div/div/header/div/a/img).",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-site-header-logo-image-sizing-by-modifying-only-the-selected-header-logo-img-element-xpath-html-body-div-div-header-div-a-img-in-frontend-src-components-layout-siteheader-tsx-so-the-greenplantz-logo-displays-at-an-appropriate-required-size-and-remains-responsive-across-screen-sizes-without-overflowing-the-header-height-or-distorting-the-logo-s-aspect-ratio",
+      "title": "Update the site header logo image sizing by modifying ONLY the selected header logo <img> element (XPath: /html/body/div/div/header/div/a/img) in frontend/src/components/layout/SiteHeader.tsx so the GreenPlantz logo displays at an appropriate required size and remains responsive across screen sizes, without overflowing the header height or distorting the logo’s aspect ratio.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-site-header-logo-image-element-in-frontend-src-components-layout-siteheader-tsx-to-use-the-newly-resized-logo-asset-as-its-src-replacing-the-current-assets-generated-greenplantz-final-straight-logo-bg-removed-dim-1536x864-cb-20260208-png-reference",
+      "title": "Update the Site Header logo image element in frontend/src/components/layout/SiteHeader.tsx to use the newly resized logo asset as its src, replacing the current /assets/generated/greenplantz-final-straight-logo-bg-removed.dim_1536x864.cb_20260208.png reference.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-uploaded-image-image-4-png-to-frontend-static-assets-and-generate-a-header-optimized-transparent-png-logo-at-exactly-112px-height-preserve-aspect-ratio-no-distortion-no-extra-padding-unless-needed-to-avoid-clipping-saved-under-frontend-public-assets-generated-using-a-cache-busting-filename",
+      "title": "Add the uploaded image (image-4.png) to frontend static assets and generate a header-optimized, transparent PNG logo at exactly 112px height (preserve aspect ratio, no distortion, no extra padding unless needed to avoid clipping), saved under frontend/public/assets/generated using a cache-busting filename.",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-only-the-siteheader-logo-img-element-in-frontend-src-components-layout-siteheader-tsx-the-img-inside-the-home-link-to-reference-the-newly-generated-cache-busted-logo-file-under-assets-generated-replacing-the-currently-broken-src-assets-generated-greenplantz-header-logo-dim-504x112-cb-20260208-01-png",
+      "title": "Update ONLY the SiteHeader logo <img> element in frontend/src/components/layout/SiteHeader.tsx (the <img> inside the home Link) to reference the newly generated cache-busted logo file under /assets/generated/, replacing the currently broken src \"/assets/generated/greenplantz-header-logo.dim_504x112.cb_20260208_01.png\".",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-siteheader-logo-remains-responsive-and-does-not-overflow-the-header-height-adjust-sizing-on-only-the-same-siteheader-logo-img-element-if-needed-so-it-fits-within-the-header-header-container-height-is-h-16-while-maintaining-the-logo-s-aspect-ratio",
+      "title": "Ensure the SiteHeader logo remains responsive and does not overflow the header height: adjust sizing on ONLY the same SiteHeader logo <img> element if needed so it fits within the header (header container height is h-16) while maintaining the logo’s aspect ratio.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-only-the-siteheader-logo-img-element-in-frontend-src-components-layout-siteheader-tsx-the-img-inside-the-home-link-to-reference-the-newly-generated-cache-busted-logo-file-under-assets-generated-and-ensure-the-referenced-file-path-exists-in-the-built-frontend-so-the-logo-does-not-appear-broken-or-replaced-by-an-incorrect-old-brand",
+      "title": "Update ONLY the SiteHeader logo <img> element in frontend/src/components/layout/SiteHeader.tsx (the <img> inside the home Link) to reference the newly generated cache-busted logo file under /assets/generated/, and ensure the referenced file path exists in the built frontend so the logo does not appear broken or replaced by an incorrect/old brand.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-siteheader-logo-remains-responsive-and-does-not-overflow-the-header-height-the-header-container-height-is-h-16-by-adjusting-sizing-classes-on-only-the-same-siteheader-logo-img-element-if-needed-while-maintaining-the-logo-s-aspect-ratio",
+      "title": "Ensure the SiteHeader logo remains responsive and does not overflow the header height (the header container height is h-16) by adjusting sizing classes on ONLY the same SiteHeader logo <img> element if needed, while maintaining the logo’s aspect ratio.",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-only-the-siteheader-logo-img-element-in-frontend-src-components-layout-siteheader-tsx-the-img-inside-the-home-link-current-src-is-assets-generated-greenplantz-header-logo-dim-504x112-cb-20260208-03-png-to-use-the-newly-generated-cache-busted-logo-asset-path-under-assets-generated-and-ensure-the-logo-remains-responsive-and-does-not-overflow-the-header-height-header-container-height-is-h-16-while-maintaining-aspect-ratio",
+      "title": "Update ONLY the SiteHeader logo <img> element in frontend/src/components/layout/SiteHeader.tsx (the <img> inside the home Link; current src is \"/assets/generated/greenplantz-header-logo.dim_504x112.cb_20260208_03.png\") to use the newly generated cache-busted logo asset path under /assets/generated/, and ensure the logo remains responsive and does not overflow the header height (header container height is h-16) while maintaining aspect ratio.",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -394,6 +512,80 @@
       "summary": "Add backend APIs for platform-admin allowlist management by Principal so an existing platform admin can grant admin access to the Principal corresponding to greenplantz2020@gmail.com.",
       "reqIds": [
         "REQ-35"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Update branding assets: use provided large image as site logo and create a small 'GP' favicon for the GreenPlantz site.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-41",
+      "summary": "Adjust the site header logo sizing so the new GreenPlantz logo is displayed at an appropriate/required size across screen sizes (responsive).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-42",
+      "summary": "Create a resized, header-optimized version of the uploaded logo image \"greenplantz final straight logo back ground removed cropped1 1080px-1.png\" by scaling it to 112px tall (preserve aspect ratio, keep transparent background, no padding added unless required to avoid clipping) and save it as a static asset under frontend/public/assets/generated with a cache-busting filename.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-43",
+      "summary": "Add the newly uploaded image (image-5.png) to frontend static assets under frontend/public/assets/generated/ and generate a header-optimized transparent PNG at exactly 112px height (preserve aspect ratio, no distortion, no extra padding unless needed to avoid clipping) using a cache-busting filename.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-44",
+      "summary": "Add the newly uploaded logo image \"greenplantz final straight logo back ground removed cropped1 1950px.png\" to frontend static assets under frontend/public/assets/generated, generate a header-optimized transparent PNG at exactly 112px height (preserve aspect ratio, no distortion, no extra padding unless needed to avoid clipping) with a cache-busting filename, and ensure the generated file is present in the built frontend output.",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-45",
+      "summary": "Add an admin-controlled order assignment/authorization workflow: customer orders appear in GreenPlantz Team/Admin portal first; only after admin approval/assignment are order details shared with the assigned nursery/vendor.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-46",
+      "summary": "Collect and store full customer profile details at registration/checkout: full name, delivery address (including state), PIN code, email, and mobile/phone number; show these details with each order in the GreenPlantz Team/Admin portal.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-47",
+      "summary": "GreenPlantz Team/Admin portal: add an Orders management view showing assigned nursery/vendor, product details and quantities, and customer delivery/contact details; support admin approval/assignment of orders to a nursery/vendor.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-48",
+      "summary": "Nursery/Vendor portal: once an order is assigned, allow the nursery/vendor to download a shipping slip for that order.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-49",
+      "summary": "Add platform-admin allowlist entries for provided Internet Identity Principal IDs (including 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae and b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-50",
+      "summary": "Add the Internet Identity Principal ID \"7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae\" to the backend platform-admin allowlist so this principal is recognized as a Platform Admin (isPlatformAdmin = true) and can access the Team/Admin portal admin screens after signing in.",
+      "reqIds": [
+        "REQ-54"
       ],
       "status": "pending"
     }

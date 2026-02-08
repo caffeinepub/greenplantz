@@ -3,7 +3,7 @@
   "frontend/tailwind.config.js": "Tailwind configuration extending the theme with GreenPlantz color tokens, custom fonts, shadows, and design system utilities.",
   "frontend/src/App.tsx": "Root application component with TanStack Router setup including all routes for storefront, admin (including platform admins management), portals, and nursery dashboard pages.",
   "frontend/src/components/layout/AppShell.tsx": "Main layout wrapper component that renders the site header, main content outlet, and footer for all pages.",
-  "frontend/src/components/layout/SiteHeader.tsx": "Responsive header with role-based navigation including new Platform Admins link for platform admins in the admin section.",
+  "frontend/src/components/layout/SiteHeader.tsx": "Responsive header with role-based navigation displaying the GreenPlantz logo from the newly uploaded image asset at 112px height with cache-busting filename (cb_20260208_04) and responsive sizing (h-10 sm:h-12 md:h-14) with object-contain to maintain aspect ratio across all screen sizes.",
   "frontend/src/components/layout/SiteFooter.tsx": "Site footer with brand information, service areas (Kerala, Karnataka, Tamil Nadu, Andhra Pradesh), quick links (including portal login links), contact details (WhatsApp, Instagram, Email with clickable links), social links section, and attribution to caffeine.ai with love icon.",
   "frontend/src/pages/HomePage.tsx": "Homepage with hero section, feature cards, and category browsing grid displaying only top-level categories from the hierarchical taxonomy.",
   "frontend/src/pages/CatalogPage.tsx": "Product catalog page with search functionality, hierarchical category filtering sidebar with collapsible parent/child groups, and responsive product grid supporting multi-select category filters with descendant inclusion.",
@@ -54,5 +54,7 @@
   "frontend/src/utils/categoryTaxonomy.ts": "Utility functions for working with hierarchical category taxonomy including flattening, finding descendants, extracting leaf categories, and tree traversal operations.",
   "frontend/src/components/auth/PrincipalIdPanel.tsx": "Reusable UI panel component that displays a user's Internet Identity Principal ID with a copy-to-clipboard button for easy sharing with admins.",
   "frontend/src/hooks/admin/usePlatformAdminAllowlist.ts": "React Query mutation hooks for granting and revoking platform admin access by Principal ID with role cache invalidation.",
-  "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx": "Platform-admin-only management screen with forms to add/remove Principal IDs from the admin allowlist with validation and confirmation dialogs."
+  "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx": "Platform-admin-only management screen with forms to add/remove Principal IDs from the admin allowlist with validation and confirmation dialogs.",
+  "frontend/index.html": "HTML entry point with favicon links for ICO, 32x32 PNG, and 16x16 PNG formats referencing the GP monogram favicon assets.",
+  "frontend/public/assets/generated/greenplantz-header-logo.dim_504x112.cb_20260208_01.png": "Resized GreenPlantz header logo asset at exactly 112px height (504x112 dimensions) with transparent background, derived from the original straight wordmark logo with cache-busting filename."
 }

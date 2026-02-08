@@ -1,57 +1,21 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T14:16:22.237Z",
+  "generatedAt": "2026-02-08T19:10:04.483Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 2,
+    "total": 1,
+    "implemented": 0,
     "items": [
       {
-        "id": "REQ-34",
-        "summary": "Update the Team Portal and admin access-denied experiences to display the currently authenticated Internet Identity Principal ID in the UI (English labels), so the Principal can be copied for admin allowlisting.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/auth/PrincipalIdPanel.tsx",
-          "frontend/src/components/auth/AccessDeniedScreen.tsx",
-          "frontend/src/components/auth/RequirePlatformAdmin.tsx",
-          "frontend/src/pages/portals/TeamPortalPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/auth/PrincipalIdPanel.tsx",
-          "frontend/src/components/auth/AccessDeniedScreen.tsx",
-          "frontend/src/components/auth/RequirePlatformAdmin.tsx",
-          "frontend/src/pages/portals/TeamPortalPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-35",
-        "summary": "Add backend APIs for platform-admin allowlist management by Principal so an existing platform admin can grant admin access to the Principal corresponding to greenplantz2020@gmail.com.",
+        "id": "REQ-54",
+        "summary": "Add the Internet Identity Principal ID \"7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae\" to the backend platform-admin allowlist so this principal is recognized as a Platform Admin (isPlatformAdmin = true) and can access the Team/Admin portal admin screens after signing in.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
-      },
-      {
-        "id": "REQ-36",
-        "summary": "Add a platform-admin UI screen to manage platform admins by Principal ID (add/remove) and wire it to the new backend allowlist management APIs.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/admin/usePlatformAdminAllowlist.ts",
-          "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/SiteHeader.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/admin/usePlatformAdminAllowlist.ts",
-          "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/layout/SiteHeader.tsx"
-        ]
       }
     ]
   },
@@ -59,20 +23,11 @@
     "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/auth/AccessDeniedScreen.tsx",
-    "frontend/src/components/auth/PrincipalIdPanel.tsx",
-    "frontend/src/components/auth/RequirePlatformAdmin.tsx",
-    "frontend/src/components/layout/SiteHeader.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/admin/usePlatformAdminAllowlist.ts",
-    "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx",
-    "frontend/src/pages/portals/TeamPortalPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,19 +1,15 @@
-// Fixes persistent migration errors by mapping parent/child relationships via persistent Tree data. This
-// approach supports the new category taxonomy with parentCategoryId attribute.
 import Map "mo:core/Map";
 import List "mo:core/List";
 import Array "mo:core/Array";
 import Text "mo:core/Text";
 import Char "mo:core/Char";
-import Principal "mo:core/Principal";
-import Order "mo:core/Order";
 import Time "mo:core/Time";
+import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
 actor {
-  // Type Definitions
   public type CategoryId = Nat;
   public type ProductId = Nat;
   public type GardenCenterId = Nat;
@@ -41,7 +37,7 @@ actor {
     id : CategoryId;
     name : Text;
     description : Text;
-    parentCategoryId : ?CategoryId; // New persistent migration enabled
+    parentCategoryId : ?CategoryId;
   };
 
   public type Product = {
@@ -49,7 +45,7 @@ actor {
     name : Text;
     description : Text;
     categoryId : CategoryId;
-    parentCategoryId : ?CategoryId; // New persistent migration enabled
+    parentCategoryId : ?CategoryId;
     priceCents : Nat;
     stock : Nat;
     active : Bool;
@@ -67,7 +63,7 @@ actor {
     id : OrderId;
     products : [OrderItem];
     totalAmountCents : Nat;
-    createdAt : Time.Time;
+    createdAt : Int;
     status : {
       #placed;
       #shipped;
@@ -87,16 +83,15 @@ actor {
     subcategories : [CategoryWithSubcategories];
   };
 
-  // Core State
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  var nextCategoryId = 1; // 0 reserved for "Uncategorized (Default) Category"
+  var nextCategoryId = 0;
   var nextProductId = 0;
   var nextGardenCenterId = 0;
 
-  let categories = Map.empty<CategoryId, Category>(); // Persistently store categories with parentCategoryId
-  let products = Map.empty<ProductId, Product>(); // Persistently store products with parentCategoryId
+  let categories = Map.empty<CategoryId, Category>();
+  let products = Map.empty<ProductId, Product>();
   let userProfiles = Map.empty<Principal, UserProfile>();
   let gardenCenters = Map.empty<
     GardenCenterId,
@@ -111,7 +106,6 @@ actor {
   >();
   let orders = Map.empty<Principal, Map.Map<OrderId, Order>>();
 
-  // Helper Functions
   func containsSearchTerm(haystack : Text, needle : Text) : Bool {
     let haystackChars = haystack.toArray();
     let needleChars = needle.toArray();
@@ -207,7 +201,6 @@ actor {
     orders.add(caller, userOrders);
   };
 
-  // Platform Admin Management Functions
   public shared ({ caller }) func grantAdminAccess(userPrincipal : Principal) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can grant admin access");
@@ -236,7 +229,6 @@ actor {
     AccessControl.getUserRole(accessControlState, userPrincipal);
   };
 
-  // Role Query Functions
   public query ({ caller }) func getCallerRole() : async CallerRole {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can query role information");
@@ -248,7 +240,6 @@ actor {
     };
   };
 
-  // User Profile Functions
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view profiles");
@@ -270,7 +261,6 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Garden Center Functions
   public shared ({ caller }) func createGardenCenter(name : Text, location : Text) : async GardenCenterId {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can create garden centers");
@@ -366,12 +356,10 @@ actor {
     };
   };
 
-  // Retrieve All Categories as a Flat List (Public - no auth required for browsing)
   public query ({ caller }) func getCategories() : async [Category] {
     categories.values().toArray();
   };
 
-  // Retrieve Full Taxonomy Tree (Public - no auth required for browsing)
   public query ({ caller }) func getFullCategoryTaxonomy() : async [CategoryWithSubcategories] {
     let roots = List.empty<CategoryWithSubcategories>();
 
@@ -388,7 +376,6 @@ actor {
     roots.toArray();
   };
 
-  // Helper to build subcategory structure
   func buildSubcategoryTree(category : Category) : CategoryWithSubcategories {
     let filtered = categories.filter(
       func(_id, c) { c.parentCategoryId == ?category.id }
@@ -404,7 +391,6 @@ actor {
     };
   };
 
-  // Basic product management (Public - no auth required for browsing)
   public query ({ caller }) func getActiveProducts() : async [Product] {
     products.values().toArray().filter(func(p) { p.active });
   };
@@ -420,11 +406,9 @@ actor {
     };
   };
 
-  // Administrative Functions
   public shared ({ caller }) func addCategory(name : Text, description : Text, parentCategoryId : ?CategoryId) : async CategoryId {
     assertPlatformAdmin(caller);
 
-    // Validate parentCategoryId
     switch (parentCategoryId) {
       case (null) {};
       case (?parentId) {
@@ -447,7 +431,6 @@ actor {
     newCategory.id;
   };
 
-  // Product Management
   public shared ({ caller }) func addProduct(
     name : Text,
     description : Text,
@@ -486,26 +469,21 @@ actor {
     newProduct.id;
   };
 
-  // Comprehensive Seed Data (for testing)
   public shared ({ caller }) func initializeSeedData() : async () {
     assertPlatformAdmin(caller);
 
-    // Clear current categories and products
-    nextCategoryId := 1; // 0 reserved for "Uncategorized (Default) Category"
     categories.clear();
-    nextProductId := 0;
     products.clear();
+    nextCategoryId := 0;
+    nextProductId := 0;
 
-    // Always retain "Uncategorized (Default) Category"
-    let uncategorizedId = 0;
-    categories.add(uncategorizedId, {
-      id = uncategorizedId;
+    categories.add(0, {
+      id = 0;
       name = "Uncategorized";
       description = "Uncategorized";
       parentCategoryId = null;
     });
 
-    // Root categories
     let plantsCategoryId = nextCategoryId;
     categories.add(plantsCategoryId, {
       id = plantsCategoryId;
@@ -542,7 +520,6 @@ actor {
     });
     nextCategoryId += 1;
 
-    // Subcategories for Plants
     let indoorPlantsCategoryId = nextCategoryId;
     categories.add(indoorPlantsCategoryId, {
       id = indoorPlantsCategoryId;
@@ -561,7 +538,6 @@ actor {
     });
     nextCategoryId += 1;
 
-    // Nested subcategories for Pots
     let ceramicPotsCategoryId = nextCategoryId;
     categories.add(ceramicPotsCategoryId, {
       id = ceramicPotsCategoryId;
@@ -589,9 +565,6 @@ actor {
     });
     nextCategoryId += 1;
 
-    // Seed sample products using the new nested categories
-    products.clear(); // Explicitly clear products before seeding new ones
-    // Indoor Plant Product
     switch (categories.get(indoorPlantsCategoryId)) {
       case (null) { Runtime.trap("Indoor Plants category not found") };
       case (_) {
@@ -604,7 +577,7 @@ actor {
           priceCents = 1999;
           stock = 20;
           active = true;
-          gardenCenterId = 0; // Temporary, could be updated
+          gardenCenterId = 0;
           imageUrls = [];
         };
         products.add(nextProductId, plantProduct);
@@ -612,7 +585,6 @@ actor {
       };
     };
 
-    // Ceramic Pot Product
     switch (categories.get(ceramicPotsCategoryId)) {
       case (null) { Runtime.trap("Ceramic Pots category not found") };
       case (_) {
@@ -625,7 +597,7 @@ actor {
           priceCents = 899;
           stock = 30;
           active = true;
-          gardenCenterId = 0; // Temporary, could be updated
+          gardenCenterId = 0;
           imageUrls = [];
         };
         products.add(nextProductId, potProduct);
@@ -633,17 +605,16 @@ actor {
       };
     };
 
-    // Default uncategorized product (should always succeed)
     let defaultProduct : Product = {
       id = nextProductId;
       name = "Mystery Plant";
       description = "You never know what you'll get";
       priceCents = 999;
       stock = 1;
-      categoryId = uncategorizedId; // Uncategorized (Default) Category
-      parentCategoryId = ?uncategorizedId;
+      categoryId = 0;
+      parentCategoryId = ?0;
       active = true;
-      gardenCenterId = 0; // Temporary, could be updated
+      gardenCenterId = 0;
       imageUrls = [];
     };
     products.add(nextProductId, defaultProduct);

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { ShoppingCart, Menu, X, Leaf } from 'lucide-react';
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
@@ -21,6 +22,7 @@ export default function SiteHeader() {
   const { identity } = useInternetIdentity();
   const { data: userProfile } = useGetCallerUserProfile();
   const { data: role } = useGetCallerRole();
+  const { resolvedTheme } = useTheme();
   const isAuthenticated = !!identity;
 
   const navLinks: NavLink[] = [
@@ -57,13 +59,12 @@ export default function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container-custom flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl">
+        <Link to="/" className="flex items-center">
           <img 
-            src="/assets/generated/greenplantz-logo.dim_512x512.png" 
+            src="/assets/generated/greenplantz-header-logo-from-upload.dim_AUTOx112.cb_20260208_04.png"
             alt="GreenPlantz" 
-            className="h-8 w-8"
+            className="h-10 w-auto max-h-12 object-contain sm:h-12 md:h-14"
           />
-          <span className="hidden sm:inline text-primary">GreenPlantz</span>
         </Link>
 
         {/* Desktop Navigation */}

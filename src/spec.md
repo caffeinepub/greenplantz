@@ -1,12 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Allow existing platform admins to grant/revoke platform admin access by Internet Identity Principal, and make it easy for users to copy their own Principal ID for allowlisting.
+**Goal:** Allowlist an additional Internet Identity Principal ID as a Platform Admin so they can access admin-only portal screens.
 
 **Planned changes:**
-- Show the currently authenticated Internet Identity Principal ID (English label) on `/portal/team` in a readable/copyable format.
-- Show the currently authenticated Internet Identity Principal ID on the admin access-denied screen (English label) when a signed-in user is not a platform admin.
-- Add admin-only backend APIs to add/remove platform admin Principals, with persistent storage across upgrades.
-- Add a platform-admin-only UI screen to manage platform admins by Principal ID (add/remove with confirmation) wired to the new backend APIs.
+- Add Principal ID `7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae` to the backend platform-admin allowlist in `backend/main.mo`.
+- Ensure existing platform-admin allowlist entries remain unchanged.
 
-**User-visible outcome:** Users can see and copy their Principal ID from the Team Portal and access-denied screens, and platform admins can add/remove platform admin access for specific Principal IDs via a dedicated admin UI.
+**User-visible outcome:** After deployment, signing in with the specified Principal ID is recognized as a Platform Admin (`isPlatformAdmin = true`), allowing access to Team/Admin portal pages guarded by platform-admin checks.
