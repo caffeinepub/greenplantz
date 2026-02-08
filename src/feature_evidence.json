@@ -1,0 +1,123 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-update-the-nursery-portal-portal-nursery-to-support-a-complete-vendor-nursery-onboarding-flow-using-internet-identity-after-the-user-signs-in-if-they-do-not-yet-belong-to-a-nursery-no-gardencentermemberships-show-a-sign-up-register-nursery-form-that-creates-a-new-nursery-garden-center-by-calling-the-backend-creategardencenter-name-location-then-routes-the-user-to-the-nursery-dashboard-upon-success",
+      "featureTitle": "Update the Nursery Portal (/portal/nursery) to support a complete Vendor/Nursery onboarding flow using Internet Identity: after the user signs in, if they do not yet belong to a nursery (no gardenCenterMemberships), show a “Sign Up / Register Nursery” form that creates a new nursery (garden center) by calling the backend createGardenCenter(name, location), then routes the user to the Nursery Dashboard upon success.",
+      "files": [
+        "frontend/src/hooks/nursery/useCreateGardenCenter.ts",
+        "frontend/src/pages/portals/NurseryPortalPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-20"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-nursery-dashboard-product-creation-ui-currently-the-add-product-dialog-in-frontend-src-pages-nursery-nurserydashboardpage-tsx-to-allow-entering-multiple-product-photo-urls-at-least-1-up-to-a-reasonable-limit-such-as-5-and-previewing-them-before-submission-send-these-urls-to-the-backend-when-creating-the-product",
+      "featureTitle": "Update the Nursery Dashboard product creation UI (currently the “Add Product” dialog in frontend/src/pages/nursery/NurseryDashboardPage.tsx) to allow entering multiple product photo URLs (at least 1, up to a reasonable limit such as 5) and previewing them before submission; send these URLs to the backend when creating the product.",
+      "files": [
+        "frontend/src/hooks/nursery/useGardenCenterProducts.ts",
+        "frontend/src/pages/nursery/NurseryDashboardPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-22"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-product-details-page-frontend-src-pages-productdetailspage-tsx-to-display-product-photos-when-available-imageurls-non-empty-including-a-primary-image-and-selectable-thumbnails-or-a-simple-gallery-to-switch-the-primary-image",
+      "featureTitle": "Update the Product Details page (frontend/src/pages/ProductDetailsPage.tsx) to display product photos when available (imageUrls non-empty), including a primary image and selectable thumbnails (or a simple gallery) to switch the primary image.",
+      "files": [
+        "frontend/src/pages/ProductDetailsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-23"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-storefront-product-cards-frontend-src-components-store-productcard-tsx-to-show-the-first-product-photo-imageurls-0-when-available-otherwise-keep-the-existing-placeholder-behavior",
+      "featureTitle": "Update storefront product cards (frontend/src/components/store/ProductCard.tsx) to show the first product photo (imageUrls[0]) when available; otherwise keep the existing placeholder behavior.",
+      "files": [
+        "frontend/src/components/store/ProductCard.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-24"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-enhance-the-greenplantz-team-admin-nursery-management-ui-frontend-src-pages-admin-adminnurseriespage-tsx-so-that-for-each-nursery-shop-garden-center-the-admin-can-view-the-products-added-by-that-nursery-using-getproductsforgardencenter-and-see-key-product-fields-including-name-price-stock-active-status-and-at-least-one-product-photo-thumbnail-when-available",
+      "featureTitle": "Enhance the GreenPlantz Team admin nursery management UI (frontend/src/pages/admin/AdminNurseriesPage.tsx) so that, for each nursery shop (garden center), the admin can view the products added by that nursery (using getProductsForGardenCenter) and see key product fields including name, price, stock, active status, and at least one product photo thumbnail when available.",
+      "files": [
+        "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts",
+        "frontend/src/pages/admin/AdminNurseriesPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-26"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-admin-nursery-management-ui-to-allow-a-platform-admin-to-remove-a-nursery-shop-garden-center-with-a-confirmation-dialog-and-refresh-the-admin-list-and-related-product-views-after-the-action-completes",
+      "featureTitle": "Update the admin nursery management UI to allow a platform admin to remove a nursery shop (garden center) with a confirmation dialog, and refresh the admin list and related product views after the action completes.",
+      "files": [
+        "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
+        "frontend/src/pages/admin/AdminNurseriesPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-28"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

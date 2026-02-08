@@ -1,0 +1,325 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 11,
+  "summary": "Build a website and mobile app for GreenPlantz, an online store selling garden products and plants, with separate role-based logins for GreenPlantz team admins, Garden Nursery owners/teams, and Customers, including nursery-level management capabilities.",
+  "architectural_notes": [
+    "Introduce RBAC with distinct roles (GreenPlantz admin, nursery owner/team, customer) and permissions for product/nursery management and account disabling/removal.",
+    "Add role-based portal entry links in the SiteFooter (Quick Links) routing to /portal/nursery, /portal/team, and /portal/customer.",
+    "Update SiteFooter bottom section to include business contact methods (WhatsApp, Instagram, support email) alongside existing quick links; keep role-based portal links intact.",
+    "Extend role-based portals to include explicit registration + sign-in UIs for Nursery/Vendor and GreenPlantz Team/Admin.",
+    "Nursery product management UI must support attaching/displaying product photos (image upload/selection and rendering on product details).",
+    "GreenPlantz Team/Admin UI should include nursery/shop listing with drill-down to products and an action to remove a nursery/shop."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-create-a-greenplantz-storefront-web-app-that-is-fully-responsive-mobile-first-and-functions-as-the-website-and-app-experience-single-react-app-with-layouts-optimized-for-desktop-tablet-and-phone",
+      "title": "Create a GreenPlantz storefront web app that is fully responsive (mobile-first) and functions as the “website and app” experience (single React app with layouts optimized for desktop, tablet, and phone).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-coherent-greenplantz-visual-theme-and-design-system-colors-typography-spacing-buttons-cards-with-an-earthy-garden-aesthetic-avoid-a-blue-purple-primary-palette-and-apply-it-consistently-across-all-pages",
+      "title": "Implement a coherent GreenPlantz visual theme and design system (colors, typography, spacing, buttons, cards) with an earthy garden aesthetic (avoid a blue/purple primary palette) and apply it consistently across all pages.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-core-storefront-pages-home-product-catalog-with-category-filtering-and-text-search-product-details-cart-and-checkout-order-review-place-order",
+      "title": "Implement the core storefront pages: Home, Product Catalog (with category filtering and text search), Product Details, Cart, and Checkout (order review + place order).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-cart-state-management-on-the-frontend-add-to-cart-update-quantity-remove-clear-and-persist-the-cart-locally-on-the-client-so-it-survives-refreshes",
+      "title": "Implement cart state management on the frontend (add to cart, update quantity, remove, clear) and persist the cart locally on the client so it survives refreshes.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-order-placement-on-place-order-create-an-order-record-in-the-backend-and-return-an-order-confirmation-order-id-summary",
+      "title": "Implement order placement: on “Place order”, create an order record in the backend and return an order confirmation (order ID + summary).",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-basic-customer-identity-support-using-internet-identity-so-users-can-view-their-own-order-history-in-the-app",
+      "title": "Add basic customer identity support using Internet Identity so users can view their own order history in the app.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-only-workflow-protected-by-a-backend-maintained-allowlist-of-admin-principals-to-manage-the-product-catalog-create-product-edit-product-and-set-product-active-inactive",
+      "title": "Create an admin-only workflow (protected by a backend-maintained allowlist of admin principals) to manage the product catalog: create product, edit product, and set product active/inactive.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-and-include-required-static-image-assets-for-the-greenplantz-brand-and-wire-them-into-the-ui-via-frontend-static-assets-do-not-serve-generated-images-from-the-backend",
+      "title": "Generate and include required static image assets for the GreenPlantz brand and wire them into the UI via frontend static assets (do not serve generated images from the backend).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-to-provide-distinct-role-based-entry-points-separate-portal-pages-for-greenplantz-team-garden-nursery-owners-teams-and-customers-each-portal-must-require-internet-identity-authentication-and-then-route-the-user-to-role-appropriate-screens-based-on-backend-role-checks",
+      "title": "Update the frontend to provide distinct role-based entry points (separate portal pages) for: GreenPlantz team, Garden Nursery owners/teams, and Customers. Each portal must require Internet Identity authentication and then route the user to role-appropriate screens based on backend role checks.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-nursery-dashboard-ui-for-garden-nursery-owners-teams-that-allows-them-to-view-and-edit-nursery-details-and-manage-their-own-product-catalog-create-edit-change-and-activate-deactivate-using-the-new-backend-nursery-product-ownership-apis",
+      "title": "Add a nursery dashboard UI for Garden Nursery owners/teams that allows them to view and edit nursery details and manage their own product catalog (create/edit/change and activate/deactivate), using the new backend nursery/product ownership APIs.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-greenplantz-team-admin-ui-section-to-manage-nurseries-and-nursery-team-members-including-the-ability-to-remove-disable-nursery-team-access-when-issues-arise",
+      "title": "Add a GreenPlantz team admin UI section to manage nurseries and nursery team members, including the ability to remove/disable nursery team access when issues arise.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-website-footer-frontend-src-components-layout-sitefooter-tsx-quick-links-section-to-include-three-new-internal-links-1-vendor-or-nursery-registration-sign-in-linking-to-portal-nursery-2-greenplantz-team-admin-login-linking-to-portal-team-and-3-customer-login-linking-to-portal-customer-keep-the-existing-footer-quick-links-unless-removing-them-is-explicitly-required",
+      "title": "Update the website footer (frontend/src/components/layout/SiteFooter.tsx) “Quick Links” section to include three new internal links: (1) “Vendor or Nursery Registration / Sign In” linking to /portal/nursery, (2) “GreenPlantz Team / Admin Login” linking to /portal/team, and (3) “Customer Login” linking to /portal/customer. Keep the existing footer quick links unless removing them is explicitly required.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-website-footer-contact-area-to-display-these-contact-details-with-clear-labels-and-clickable-links-whatsapp-number-91-6238029664-instagram-handle-greenplantz-and-email-caregreenplantz-gmail-com-use-english-for-all-labels",
+      "title": "Update the website footer contact area to display these contact details with clear labels and clickable links: WhatsApp number +91 6238029664, Instagram handle @greenplantz_, and email caregreenplantz@gmail.com. Use English for all labels.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-bottom-of-site-social-section-in-the-footer-that-provides-prominent-social-link-entry-points-whatsapp-instagram-email-placed-at-the-very-bottom-area-of-the-website-footer-below-the-main-footer-columns",
+      "title": "Add a bottom-of-site social section in the footer that provides prominent social link entry points (WhatsApp, Instagram, Email) placed at the very bottom area of the website footer (below the main footer columns).",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-nursery-portal-portal-nursery-to-support-a-complete-vendor-nursery-onboarding-flow-using-internet-identity-after-the-user-signs-in-if-they-do-not-yet-belong-to-a-nursery-no-gardencentermemberships-show-a-sign-up-register-nursery-form-that-creates-a-new-nursery-garden-center-by-calling-the-backend-creategardencenter-name-location-then-routes-the-user-to-the-nursery-dashboard-upon-success",
+      "title": "Update the Nursery Portal (/portal/nursery) to support a complete Vendor/Nursery onboarding flow using Internet Identity: after the user signs in, if they do not yet belong to a nursery (no gardenCenterMemberships), show a “Sign Up / Register Nursery” form that creates a new nursery (garden center) by calling the backend createGardenCenter(name, location), then routes the user to the Nursery Dashboard upon success.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-nursery-dashboard-product-creation-ui-currently-the-add-product-dialog-in-frontend-src-pages-nursery-nurserydashboardpage-tsx-to-allow-entering-multiple-product-photo-urls-at-least-1-up-to-a-reasonable-limit-such-as-5-and-previewing-them-before-submission-send-these-urls-to-the-backend-when-creating-the-product",
+      "title": "Update the Nursery Dashboard product creation UI (currently the “Add Product” dialog in frontend/src/pages/nursery/NurseryDashboardPage.tsx) to allow entering multiple product photo URLs (at least 1, up to a reasonable limit such as 5) and previewing them before submission; send these URLs to the backend when creating the product.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-product-details-page-frontend-src-pages-productdetailspage-tsx-to-display-product-photos-when-available-imageurls-non-empty-including-a-primary-image-and-selectable-thumbnails-or-a-simple-gallery-to-switch-the-primary-image",
+      "title": "Update the Product Details page (frontend/src/pages/ProductDetailsPage.tsx) to display product photos when available (imageUrls non-empty), including a primary image and selectable thumbnails (or a simple gallery) to switch the primary image.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-storefront-product-cards-frontend-src-components-store-productcard-tsx-to-show-the-first-product-photo-imageurls-0-when-available-otherwise-keep-the-existing-placeholder-behavior",
+      "title": "Update storefront product cards (frontend/src/components/store/ProductCard.tsx) to show the first product photo (imageUrls[0]) when available; otherwise keep the existing placeholder behavior.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enhance-the-greenplantz-team-admin-nursery-management-ui-frontend-src-pages-admin-adminnurseriespage-tsx-so-that-for-each-nursery-shop-garden-center-the-admin-can-view-the-products-added-by-that-nursery-using-getproductsforgardencenter-and-see-key-product-fields-including-name-price-stock-active-status-and-at-least-one-product-photo-thumbnail-when-available",
+      "title": "Enhance the GreenPlantz Team admin nursery management UI (frontend/src/pages/admin/AdminNurseriesPage.tsx) so that, for each nursery shop (garden center), the admin can view the products added by that nursery (using getProductsForGardenCenter) and see key product fields including name, price, stock, active status, and at least one product photo thumbnail when available.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-nursery-management-ui-to-allow-a-platform-admin-to-remove-a-nursery-shop-garden-center-with-a-confirmation-dialog-and-refresh-the-admin-list-and-related-product-views-after-the-action-completes",
+      "title": "Update the admin nursery management UI to allow a platform admin to remove a nursery shop (garden center) with a confirmation dialog, and refresh the admin list and related product views after the action completes.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Create GreenPlantz ecommerce website for garden products and plants",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Create GreenPlantz mobile app for the online store",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Add backend product and category data models and query endpoints to support: listing categories, listing products, product search/filtering, and fetching product details by ID.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Provide seed data for GreenPlantz (a reasonable starter set of categories and products spanning plants and garden supplies) so the storefront is populated on first run.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Add role-based authentication/authorization with separate logins for GreenPlantz team (admins), Garden Nursery owners/teams, and Customers.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Add nursery management features: allow authorized nursery owners/teams to manage nursery details and manage (edit/change) their products; allow GreenPlantz team to remove/disable nursery team access when issues arise.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Extend backend authorization to support three distinct application roles: (1) GreenPlantz team (platform admins), (2) Garden Nursery owners/teams (nursery operators), and (3) Customers, all authenticated via Internet Identity principals; expose query methods for the frontend to determine the caller’s role(s).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Add backend data models and APIs for Garden Nurseries, including creating/updating nursery details and managing nursery team membership (add member, remove member, and disable/revoke a member’s access).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Associate products with a nursery in the backend and enforce that nursery owners/teams can only create/edit/change products belonging to their own nursery, while GreenPlantz team admins can manage products across all nurseries.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Add footer quick links for role-based access: Vendor/Nursery Registration or Sign In, GreenPlantz Team/Admin Login, and Customer Login (linking to /portal/nursery, /portal/team, /portal/customer).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Add contact/social details in the website footer (WhatsApp +91 6238029664, Instagram @greenplantz_, email caregreenplantz@gmail.com) and place these/social links at the bottom of the site.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Add footer/bottom-of-site social media login options (social login entry points) for users.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Add/allowlist admin accounts for platform access: autozoo98@gmail.com and greenplantz2020@gmail.com.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Vendor/Nursery portal: add Sign Up form and Login flow for Vendor or Nursery Registration / Sign In (/portal/nursery).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Vendor/Nursery portal: add product adding page with product details including multiple product photos/images.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "GreenPlantz Team/Admin portal: add Admin registration and sign-in pages (/portal/team).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "GreenPlantz Team/Admin portal: after login, provide a view to list vendor/nursery shops and view the products each nursery has added.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "GreenPlantz Team/Admin portal: allow GreenPlantz team members to remove/delete a nursery shop (vendor/nursery) from the platform.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Extend the backend Product data model and product management APIs to support product photos by storing an array of image URLs per product (e.g., imageUrls : [Text]) and returning it from getProduct, getActiveProducts, getProductsForCategory, searchProducts, and getProductsForGardenCenter.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Update the Team Portal (/portal/team) experience to include an explicit “Sign In” screen using Internet Identity, and ensure that authenticated platform admins are routed to the admin nursery management area; non-admin authenticated users must see an English access/permissions message explaining that platform admin access is required.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Add backend support for GreenPlantz team members (platform admins) to remove a nursery shop (garden center) from the platform, including defining an admin-only method to disable or delete a garden center and ensuring products associated with the removed nursery no longer appear in the public active product catalog.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "GreenPlantz",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

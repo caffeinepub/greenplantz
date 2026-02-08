@@ -1,0 +1,78 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-08T11:14:13.626Z",
+  "summary": "Diff implements product photo support across backend type + migration and multiple frontend surfaces (product cards, product details gallery, nursery add-product UI). It also adds nursery portal registration flow and expands admin nurseries UI toward product visibility + removal confirmation. Team Portal (/portal/team) changes and backend admin-only garden center removal are not evidenced in the provided diff summary.",
+  "missing_requirements": [
+    {
+      "id": "REQ-21",
+      "requirement": "Extend backend product APIs so imageUrls is returned from getProduct, getActiveProducts, getProductsForCategory, searchProducts, and getProductsForGardenCenter; and addProduct/updateProduct accept and persist the list with default empty list.",
+      "reason": "The diff shows the Product type now includes imageUrls and a migration that backfills imageUrls to [], but the summary does not show updates to all required query methods or addProduct/updateProduct implementations/signatures in backend/main.mo (file is truncated).",
+      "evidence": [
+        "backend/main.mo (truncated: shows Product.imageUrls but not the methods)",
+        "backend/migration.mo (adds imageUrls default [])"
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "requirement": "Add Product dialog supports entering multiple image URLs and previewing them before submission.",
+      "reason": "NurseryDashboardPage.tsx shows state and handlers for adding/removing up to 5 URLs and sending imageUrls via hook, but the truncated diff does not clearly show a rendered thumbnail/preview list UI.",
+      "evidence": [
+        "frontend/src/pages/nursery/NurseryDashboardPage.tsx (truncated: has productImageUrls/currentImageUrl handlers, but preview rendering not shown)"
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "requirement": "Update Team Portal (/portal/team) to show explicit Internet Identity sign-in when unauthenticated; redirect platform admins to /admin/nurseries; show non-admin access message for authenticated non-admins.",
+      "reason": "No changes to the Team Portal page/route are included in the diff summary, so the required sign-in screen and routing/permission behavior are not evidenced.",
+      "evidence": [
+        "File diff summary contains no modified file for a Team Portal page (e.g., frontend/src/pages/portals/TeamPortalPage.tsx or similar)"
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "requirement": "Admin nurseries UI shows products per nursery via getProductsForGardenCenter with name, price, stock, active status, and at least one photo thumbnail; handles zero products with English empty state.",
+      "reason": "The diff adds an admin hook to fetch garden center products and modifies AdminNurseriesPage.tsx, but the file is truncated and does not evidence rendering of the required product fields, thumbnail usage, or the zero-products empty state message.",
+      "evidence": [
+        "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts (fetches getProductsForGardenCenter)",
+        "frontend/src/pages/admin/AdminNurseriesPage.tsx (truncated: imports hook/icons; rendering details not shown)"
+      ]
+    },
+    {
+      "id": "REQ-27",
+      "requirement": "Backend admin-only method to remove/disable a garden center; removed nursery’s products must not appear in public active catalog queries; unauthorized calls must trap.",
+      "reason": "Frontend adds a remove-garden-center mutation hook (truncated) and AdminNurseriesPage includes a remove confirmation flow, but backend/main.mo truncation does not show any new admin-only remove/disable garden center method nor the filtering changes for public product queries.",
+      "evidence": [
+        "backend/main.mo (truncated: no remove/disable garden center method shown)",
+        "frontend/src/hooks/admin/useGardenCentersAdmin.ts (truncated: begins defining useRemoveGardenCenter)"
+      ]
+    },
+    {
+      "id": "REQ-28",
+      "requirement": "Admin UI allows removing a nursery with confirmation dialog and refreshes list/product views without full reload; non-admins cannot use the control.",
+      "reason": "AdminNurseriesPage.tsx shows a confirmation dialog and a 'removeNursery' action that calls useRemoveGardenCenter, but the hook implementation is truncated so post-removal refresh/invalidation behavior is not evidenced; also non-admin gating is implied via RequirePlatformAdmin import but the truncated file does not show it wrapping the page.",
+      "evidence": [
+        "frontend/src/pages/admin/AdminNurseriesPage.tsx (truncated: AlertDialog + removeNursery action present, RequirePlatformAdmin imported)",
+        "frontend/src/hooks/admin/useGardenCentersAdmin.ts (truncated: useRemoveGardenCenter implementation not shown)"
+      ]
+    }
+  ],
+  "hallucinated_features": [],
+  "confidence": 0.62,
+  "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/components/store/ProductCard.tsx",
+    "frontend/src/hooks/admin/useAdminProducts.ts",
+    "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts",
+    "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
+    "frontend/src/hooks/nursery/useCreateGardenCenter.ts",
+    "frontend/src/hooks/nursery/useGardenCenterProducts.ts",
+    "frontend/src/pages/ProductDetailsPage.tsx",
+    "frontend/src/pages/admin/AdminNurseriesPage.tsx",
+    "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
+    "frontend/src/pages/portals/NurseryPortalPage.tsx",
+    "project_state.json"
+  ]
+}

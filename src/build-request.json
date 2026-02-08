@@ -1,0 +1,197 @@
+{
+  "kind": "build_request",
+  "title": "Add nursery sign-up flow, product photos, and team admin nursery shop management",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-20",
+      "text": "Update the Nursery Portal (/portal/nursery) to support a complete Vendor/Nursery onboarding flow using Internet Identity: after the user signs in, if they do not yet belong to a nursery (no gardenCenterMemberships), show a “Sign Up / Register Nursery” form that creates a new nursery (garden center) by calling the backend createGardenCenter(name, location), then routes the user to the Nursery Dashboard upon success.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "Also include in Vendor or Nursery Registration / Sign In , sign up form, login ..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a signed-in user without a garden center membership opens /portal/nursery, they see a registration form instead of an access denied message.",
+        "Submitting the form successfully creates a garden center and redirects the user to /nursery/dashboard.",
+        "All user-facing text on this portal page is in English.",
+        "The flow uses Internet Identity for authentication (no email/password auth UI)."
+      ]
+    },
+    {
+      "id": "REQ-21",
+      "text": "Extend the backend Product data model and product management APIs to support product photos by storing an array of image URLs per product (e.g., imageUrls : [Text]) and returning it from getProduct, getActiveProducts, getProductsForCategory, searchProducts, and getProductsForGardenCenter.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...product adding page product details with photos of the product..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Product type exposed by the backend includes an image URL list field.",
+        "Existing product query methods return the new field for each product.",
+        "addProduct and updateProduct accept the image URL list (or an optional list) and persist it with the product.",
+        "If image URLs are not provided, the field defaults to an empty list (no traps)."
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "text": "Update the Nursery Dashboard product creation UI (currently the “Add Product” dialog in frontend/src/pages/nursery/NurseryDashboardPage.tsx) to allow entering multiple product photo URLs (at least 1, up to a reasonable limit such as 5) and previewing them before submission; send these URLs to the backend when creating the product.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...sign up form, login and product adding page product details with photos of the product..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "The “Add Product” flow includes inputs for one or more image URLs and shows a thumbnail/preview list.",
+        "Submitting a product with image URLs results in the product being stored with those URLs.",
+        "Submitting a product without image URLs still succeeds.",
+        "All user-facing text is English."
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "text": "Update the Product Details page (frontend/src/pages/ProductDetailsPage.tsx) to display product photos when available (imageUrls non-empty), including a primary image and selectable thumbnails (or a simple gallery) to switch the primary image.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...product details with photos of the product..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "For products with image URLs, the page renders a visible image gallery with at least one large image and thumbnail selection.",
+        "For products without image URLs, the page renders a graceful fallback (no broken images).",
+        "Gallery UI is responsive and works on mobile and desktop."
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "text": "Update storefront product cards (frontend/src/components/store/ProductCard.tsx) to show the first product photo (imageUrls[0]) when available; otherwise keep the existing placeholder behavior.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...product details with photos of the product..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Product cards render a real product image when the product has at least one image URL.",
+        "No runtime errors occur when imageUrls is empty or missing for older seeded products."
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "text": "Update the Team Portal (/portal/team) experience to include an explicit “Sign In” screen using Internet Identity, and ensure that authenticated platform admins are routed to the admin nursery management area; non-admin authenticated users must see an English access/permissions message explaining that platform admin access is required.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "GreenPlantz Team / Admin Login  registration and sign in page"
+        ]
+      },
+      "acceptanceCriteria": [
+        "/portal/team clearly presents a sign-in screen (Internet Identity) when unauthenticated.",
+        "Authenticated platform admins are redirected to /admin/nurseries.",
+        "Authenticated non-admins see an English access denied message and are not redirected into admin pages."
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "text": "Enhance the GreenPlantz Team admin nursery management UI (frontend/src/pages/admin/AdminNurseriesPage.tsx) so that, for each nursery shop (garden center), the admin can view the products added by that nursery (using getProductsForGardenCenter) and see key product fields including name, price, stock, active status, and at least one product photo thumbnail when available.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...after registration see the vendors/nursery shops with products added in it by the nursery..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "The admin nursery list page shows a products section per nursery (or a drill-in view) populated from backend data.",
+        "Each product row/card shows core details and a thumbnail when imageUrls[0] exists.",
+        "The UI handles nurseries with zero products gracefully with an English empty-state message."
+      ]
+    },
+    {
+      "id": "REQ-27",
+      "text": "Add backend support for GreenPlantz team members (platform admins) to remove a nursery shop (garden center) from the platform, including defining an admin-only method to disable or delete a garden center and ensuring products associated with the removed nursery no longer appear in the public active product catalog.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...also nusery shop can be removed by the greenplantz team member"
+        ]
+      },
+      "acceptanceCriteria": [
+        "There is a backend method callable only by platform admins to remove a garden center (either hard-delete or disable).",
+        "After a garden center is removed/disabled, its products do not appear in getActiveProducts, getProductsForCategory, or searchProducts.",
+        "The method traps with a clear unauthorized error for non-admin callers."
+      ]
+    },
+    {
+      "id": "REQ-28",
+      "text": "Update the admin nursery management UI to allow a platform admin to remove a nursery shop (garden center) with a confirmation dialog, and refresh the admin list and related product views after the action completes.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...also nusery shop can be removed by the greenplantz team member"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin users can initiate a “Remove Nursery” action from the nursery management UI.",
+        "A confirmation dialog is shown before removal is executed.",
+        "After removal, the nursery list and any visible product lists update without requiring a full page reload.",
+        "Non-admin users cannot see or use the removal control."
+      ]
+    }
+  ],
+  "constraints": [
+    "Use English for all user-facing text.",
+    "Authentication must use Internet Identity (no email/password authentication).",
+    "Backend must remain a single Motoko actor in backend/main.mo; only add migration code if strictly required by state upgrades.",
+    "Do not edit any frontend paths listed in SYSTEM_CONTEXT.frontend.immutablePaths; compose existing UI components instead."
+  ],
+  "nonGoals": [
+    "Implementing file uploads or storing raw image binaries for product photos (use URL-based images only).",
+    "Adding third-party authentication providers or social login beyond Internet Identity.",
+    "Adding real-time updates, chat, notifications, or external database integrations."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

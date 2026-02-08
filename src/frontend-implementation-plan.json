@@ -1,0 +1,141 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Nursery onboarding, product photo URLs, and admin nursery management (frontend)",
+  "requirements": [
+    {
+      "id": "REQ-20",
+      "summary": "Add an Internet Identity-based nursery registration form to /portal/nursery for signed-in users without memberships, creating a garden center then routing to the dashboard.",
+      "acceptanceCriteria": [
+        "When a signed-in user without a garden center membership opens /portal/nursery, they see a registration form instead of an access denied message.",
+        "Submitting the form successfully creates a garden center and redirects the user to /nursery/dashboard.",
+        "All user-facing text on this portal page is in English.",
+        "The flow uses Internet Identity for authentication (no email/password auth UI)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portals/NurseryPortalPage.tsx",
+          "operation": "modify",
+          "description": "Replace the current access-denied experience for authenticated users with no gardenCenterMemberships with a “Sign Up / Register Nursery” form (name, location). Use the authorization component’s Internet Identity auth flow via existing auth hooks/guards; Verify the component's usage instructions before implementing. On successful creation, navigate to /nursery/dashboard and ensure all copy is English."
+        },
+        {
+          "path": "frontend/src/hooks/nursery/useCreateGardenCenter.ts",
+          "operation": "create",
+          "description": "Add a React Query mutation hook that calls the backend capability to create a garden center and invalidates role/my-garden-center related queries so the portal redirect logic can re-evaluate after registration."
+        }
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "summary": "Enhance Nursery Dashboard “Add Product” dialog to accept multiple image URL inputs with previews and send them when creating products.",
+      "acceptanceCriteria": [
+        "The “Add Product” flow includes inputs for one or more image URLs and shows a thumbnail/preview list.",
+        "Submitting a product with image URLs results in the product being stored with those URLs.",
+        "Submitting a product without image URLs still succeeds.",
+        "All user-facing text is English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Extend the “Add Product” dialog UI to manage an array of image URL strings (min 0, max ~5), including add/remove controls and a preview thumbnail list. Keep URL images optional (do not block submission when empty) and ensure all user-facing text is English."
+        },
+        {
+          "path": "frontend/src/hooks/nursery/useGardenCenterProducts.ts",
+          "operation": "modify",
+          "description": "Update the add-product mutation types and call signature to accept an imageUrls array and pass it to the backend capability when creating products; keep imageUrls optional and default to an empty list when omitted."
+        }
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "summary": "Display product photo gallery on the Product Details page when imageUrls are present, with responsive primary image and thumbnail selection.",
+      "acceptanceCriteria": [
+        "For products with image URLs, the page renders a visible image gallery with at least one large image and thumbnail selection.",
+        "For products without image URLs, the page renders a graceful fallback (no broken images).",
+        "Gallery UI is responsive and works on mobile and desktop."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ProductDetailsPage.tsx",
+          "operation": "modify",
+          "description": "Replace the static placeholder image card with a responsive gallery that uses product.imageUrls when non-empty (primary image + selectable thumbnails). Provide a no-images fallback that preserves the existing placeholder behavior without broken images."
+        }
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "summary": "Show the first product photo on storefront product cards when available, otherwise keep existing placeholder behavior.",
+      "acceptanceCriteria": [
+        "Product cards render a real product image when the product has at least one image URL.",
+        "No runtime errors occur when imageUrls is empty or missing for older seeded products."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/store/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Render product.imageUrls[0] as the card image when available; otherwise keep the current placeholder icon. Guard for missing/empty imageUrls to avoid runtime errors for older products."
+        }
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "summary": "Make /portal/team show an explicit Internet Identity sign-in screen when unauthenticated and route admins to /admin/nurseries while denying non-admins with an English message.",
+      "acceptanceCriteria": [
+        "/portal/team clearly presents a sign-in screen (Internet Identity) when unauthenticated.",
+        "Authenticated platform admins are redirected to /admin/nurseries.",
+        "Authenticated non-admins see an English access denied message and are not redirected into admin pages."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portals/TeamPortalPage.tsx",
+          "operation": "modify",
+          "description": "Replace the current unauthenticated placeholder with an explicit sign-in screen UI that uses the authorization component’s Internet Identity login (e.g., existing LoginButton or RequireAuth screen); Verify the component's usage instructions before implementing. Preserve existing behavior: redirect platform admins to /admin/nurseries and show an English access/permissions message for authenticated non-admins."
+        }
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "summary": "Enhance Admin Nurseries page to show products per nursery with key fields and a photo thumbnail when available.",
+      "acceptanceCriteria": [
+        "The admin nursery list page shows a products section per nursery (or a drill-in view) populated from backend data.",
+        "Each product row/card shows core details and a thumbnail when imageUrls[0] exists.",
+        "The UI handles nurseries with zero products gracefully with an English empty-state message."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/admin/AdminNurseriesPage.tsx",
+          "operation": "modify",
+          "description": "Add a products view per garden center (inline section or drill-in) that loads data via getProductsForGardenCenter and displays name, price, stock, active status, and an image thumbnail when imageUrls[0] exists. Include an English empty-state for nurseries with zero products."
+        },
+        {
+          "path": "frontend/src/hooks/admin/useGardenCenterProductsAdmin.ts",
+          "operation": "create",
+          "description": "Create admin-oriented React Query hooks for fetching products for a specific garden center (keyed per gardenCenterId) to power the AdminNurseriesPage products sections and support refresh after admin actions."
+        }
+      ]
+    },
+    {
+      "id": "REQ-28",
+      "summary": "Add a platform-admin-only “Remove Nursery” action in admin nursery management with confirmation and in-place refresh of lists.",
+      "acceptanceCriteria": [
+        "Admin users can initiate a “Remove Nursery” action from the nursery management UI.",
+        "A confirmation dialog is shown before removal is executed.",
+        "After removal, the nursery list and any visible product lists update without requiring a full page reload.",
+        "Non-admin users cannot see or use the removal control."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/admin/useGardenCentersAdmin.ts",
+          "operation": "modify",
+          "description": "Add a remove-garden-center mutation hook that calls the backend capability to remove a garden center and invalidates garden center and related product queries to refresh the admin UI after completion."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminNurseriesPage.tsx",
+          "operation": "modify",
+          "description": "Add a “Remove Nursery” control per garden center with a confirmation dialog, wired to the new removal mutation. Ensure the page refreshes nursery list and any currently shown product lists via query invalidation (no full reload). Keep the control effectively admin-only via the existing RequirePlatformAdmin wrapper and ensure all dialog text is English."
+        }
+      ]
+    }
+  ]
+}
