@@ -1,0 +1,26 @@
+{
+  "ignoreDirs": [
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    ".dfx",
+    "target",
+    "coverage",
+    ".next",
+    ".cache",
+    ".turbo",
+    ".vercel",
+    ".vscode",
+    ".idea",
+    "out",
+    "tmp",
+    "temp",
+    ".DS_Store"
+  ],
+  "maxDepth": 10,
+  "rootFolders": [
+    "backend",
+    "frontend"
+  ]
+}

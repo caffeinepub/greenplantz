@@ -1,32 +1,46 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T07:33:35.061Z",
-  "summary": "SiteHeader logo <img> src was updated to the new cache-busted 112px asset path and sizing classes were adjusted on that same <img>. However, the diff summary shows no new static asset files added under frontend/public/assets/generated/, and there were additional non-requested modifications to repo metadata/summary files.",
+  "generatedAt": "2026-02-09T10:15:39.248Z",
+  "summary": "Diff adds a backend migration module and introduces a bootstrapAdmins() helper that assigns #admin to four hardcoded principals. However, the provided diff excerpt does not show access-control state being moved to stable storage or any init/post-upgrade hook calling bootstrapAdmins(), so the persistence and automatic bootstrap requirements are not clearly satisfied from the evidence shown. The diff also adds an unrelated admin-only mock folder listing endpoint and updates project_state.json, neither of which are requested by the BuildRequest.",
   "missing_requirements": [
     {
-      "id": "REQ-78",
-      "requirement": "Add the newly provided header logo source image under frontend/public/assets/generated/ and include a derived header-optimized transparent PNG at exactly 112px height with a cache-busting filename.",
-      "reason": "The diff summary reports \"Added: 0\" and lists no newly added files under frontend/public/assets/generated/, so the required static asset files are not evidenced as present in this change set.",
+      "id": "REQ-98",
+      "requirement": "Persist the backend platform-admin allowlist/authorization state across canister upgrades and redeployments by storing the AccessControl state in stable state and restoring it correctly after upgrades.",
+      "reason": "In the shown backend/main.mo excerpt, accessControlState is declared as a non-stable `var accessControlState = AccessControl.initState();` and there is no visible stable variable, preupgrade/postupgrade logic, or other explicit mechanism demonstrating persistence/restoration across upgrades.",
       "evidence": [
-        "File diff summary: \"Added: 0\" (no added files listed)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-99",
+      "requirement": "Bootstrap initial platform-admin access during canister initialization and after upgrades (post-upgrade) so no manual UI call is required to grant the first admin; ensure the listed principals are present in the allowlist and recognized by getCallerRole().isPlatformAdmin.",
+      "reason": "Although a `bootstrapAdmins()` function is added and contains the correct principal IDs, the diff excerpt does not show it being invoked on initialization or after upgrades (no visible `system func init` / `postupgrade` usage calling it).",
+      "evidence": [
+        "backend/main.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Modified repository metadata/summary files not requested by the BuildRequest (frontend-file-summaries.txt and project_state.json).",
-      "reason": "The BuildRequest constraints specify modifying ONLY the header logo <img> element in frontend/src/components/layout/SiteHeader.tsx. Changes to these additional files are outside that scope.",
+      "description": "Added an admin-only `getParsedFolderListing()` endpoint returning a hardcoded mock folder listing.",
+      "reason": "The BuildRequest is focused on persisting and bootstrapping platform-admin authorization; it explicitly lists non-goals around new admin UI/routing, and does not request any folder listing API or mock implementation.",
       "evidence": [
-        "frontend-file-summaries.txt (modified)",
-        "project_state.json (modified)"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Modified project_state.json (project metadata/state).",
+      "reason": "The BuildRequest only specifies backend authorization persistence/bootstrap changes (and migration if needed); updating project_state.json is not requested.",
+      "evidence": [
+        "project_state.json"
       ]
     }
   ],
-  "confidence": 0.78,
+  "confidence": 0.74,
   "changed_files": [
-    "frontend-file-summaries.txt",
-    "frontend/src/components/layout/SiteHeader.tsx",
+    "backend/main.mo",
+    "backend/migration.mo",
     "project_state.json"
   ]
 }

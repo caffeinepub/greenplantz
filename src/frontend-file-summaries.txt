@@ -56,5 +56,9 @@
   "frontend/src/hooks/admin/usePlatformAdminAllowlist.ts": "React Query mutation hooks for granting and revoking platform admin access by Principal ID with role cache invalidation.",
   "frontend/src/pages/admin/AdminPlatformAdminsPage.tsx": "Platform-admin-only management screen with forms to add/remove Principal IDs from the admin allowlist with validation and confirmation dialogs.",
   "frontend/index.html": "HTML entry point with favicon links for ICO, 32x32 PNG, and 16x16 PNG formats referencing the new cache-busted favicon assets (cb_20260209_01).",
-  "frontend/public/assets/generated/greenplantz-header-logo.dim_504x112.cb_20260208_01.png": "Resized GreenPlantz header logo asset at exactly 112px height (504x112 dimensions) with transparent background, derived from the original straight wordmark logo with cache-busting filename."
+  "frontend/public/assets/generated/greenplantz-header-logo.dim_504x112.cb_20260208_01.png": "Resized GreenPlantz header logo asset at exactly 112px height (504x112 dimensions) with transparent background, derived from the original straight wordmark logo with cache-busting filename.",
+  "frontend/tools/list-folders.mjs": "Node.js script that recursively scans the repository, collects all folder paths (excluding common build/cache directories), and outputs a deterministic, alphabetically-sorted folder tree either to console or to a markdown file.",
+  "frontend/tools/list-folders.config.json": "Configuration file for the folder listing tool specifying ignored directories (node_modules, .git, dist, etc.), maximum traversal depth, and root folders to scan (backend, frontend).",
+  "frontend/tools/FOLDER_LISTING_COMMAND.md": "Documentation explaining how to run the folder listing tool from the repository root, including usage examples, configuration options, and notes on deterministic output.",
+  "frontend/REPO_FOLDER_TREE.md": "Auto-generated markdown document containing the complete repository folder structure in both tree and categorized list formats, with regeneration instructions and folder count."
 }

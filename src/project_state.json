@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 49,
+  "projectStateVersion": 63,
   "summary": "Build a website and mobile app for GreenPlantz, an online store selling garden products and plants, with separate role-based logins for GreenPlantz team admins, Garden Nursery owners/teams, and Customers, including nursery-level management capabilities.",
   "architectural_notes": [
     "Introduce RBAC with distinct roles (GreenPlantz admin, nursery owner/team, customer) and permissions for product/nursery management and account disabling/removal.",
@@ -21,10 +21,12 @@
     "Broken header logo: SiteHeader references /assets/generated/greenplantz-header-logo.dim_504x112.cb_20260208_01.png but the corresponding /public/assets/generated folder (and file) is missing, causing a broken-image icon in the deployed UI.",
     "Logo issue persists after latest build/deploy attempt (user reports it is still not corrected).",
     "Backend platform-admin allowlist is likely not being updated/persisted on deploy; Principals remain non-admin until grantAdminAccess/addPlatformAdmin is executed against the deployed canister.",
-    "Category feature not working (user reports product category selection/filtering is broken)."
+    "Category feature not working (user reports product category selection/filtering is broken).",
+    "Header logo still does not match the user-uploaded image on the user's side (possible caching or incorrect asset reference in deployed build), despite assistant reporting it looks correct after deployment (v24).",
+    "Deployment/build pipeline intermittently fails (\"Deployment didn't complete\"), blocking updates from reaching production.",
+    "User reports the Team/Admin portal still cannot be accessed (admin access issue persists)."
   ],
   "isFixRequest": true,
-  "imageRequirements": "## Required Images\n- Original uploaded header logo image from the user (greenplantz-header-logo-user-upload.source.png)\n- Header-optimized transparent logo at exactly 112px height, aspect ratio preserved (greenplantz-header-logo-user-upload.dim_auto_x112.cb_20260209_02.png)",
   "existing_features": [
     {
       "id": "feature-create-a-greenplantz-storefront-web-app-that-is-fully-responsive-mobile-first-and-functions-as-the-website-and-app-experience-single-react-app-with-layouts-optimized-for-desktop-tablet-and-phone",
@@ -481,6 +483,46 @@
         "REQ-80"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-only-the-siteheader-logo-img-element-xpath-html-body-div-div-header-div-a-img-in-frontend-src-components-layout-siteheader-tsx-so-the-deployed-header-logo-reliably-displays-the-latest-user-uploaded-greenplantz-logo-not-an-older-cached-image-keep-the-change-limited-to-that-single-img-element-its-attributes-classes-and-implement-cache-busting-on-the-image-url-e-g-by-updating-the-filename-reference-and-or-appending-a-version-query-parameter-so-clients-fetch-the-newest-logo",
+      "title": "Update ONLY the SiteHeader logo <img> element (XPath: /html/body/div/div/header/div/a/img) in frontend/src/components/layout/SiteHeader.tsx so the deployed header logo reliably displays the latest user-uploaded GreenPlantz logo (not an older cached image). Keep the change limited to that single <img> element (its attributes/classes), and implement cache-busting on the image URL (e.g., by updating the filename reference and/or appending a version query parameter) so clients fetch the newest logo.",
+      "reqIds": [
+        "REQ-81"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-only-the-siteheader-logo-img-element-xpath-html-body-div-div-header-div-a-img-in-frontend-src-components-layout-siteheader-tsx-to-use-the-newly-generated-cache-busted-112px-tall-logo-asset-from-assets-generated-as-its-src-so-the-deployed-header-logo-shows-the-latest-user-uploaded-logo-and-is-not-broken",
+      "title": "Update ONLY the SiteHeader logo <img> element (XPath: /html/body/div/div/header/div/a/img) in frontend/src/components/layout/SiteHeader.tsx to use the newly generated cache-busted 112px-tall logo asset from /assets/generated/ as its src, so the deployed header logo shows the latest user-uploaded logo and is not broken.",
+      "reqIds": [
+        "REQ-85"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-caller-role-query-behavior-so-that-role-check-failures-are-not-silently-downgraded-to-a-guest-role-in-frontend-src-hooks-auth-usecallerrole-ts-if-actor-getcallerrole-fails-propagate-the-error-or-return-a-rejected-promise-so-teamportalpage-tsx-can-show-its-existing-english-error-state-instead-of-incorrectly-showing-access-denied",
+      "title": "Update the frontend caller-role query behavior so that role-check failures are not silently downgraded to a guest role: in frontend/src/hooks/auth/useCallerRole.ts, if actor.getCallerRole() fails, propagate the error (or return a rejected promise) so TeamPortalPage.tsx can show its existing English error state instead of incorrectly showing Access Denied.",
+      "reqIds": [
+        "REQ-89"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-developer-facing-way-to-list-all-folders-in-the-project-repository-from-the-repo-root-producing-a-deterministic-readable-output",
+      "title": "Add a developer-facing way to list all folders in the project (repository) from the repo root, producing a deterministic, readable output.",
+      "reqIds": [
+        "REQ-96"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-repository-document-that-records-the-current-folder-tree-of-the-project-in-english-for-example-a-markdown-file-at-the-repo-root-and-ensure-the-new-folder-listing-command-script-can-regenerate-it",
+      "title": "Create a repository document that records the current folder tree of the project in English (for example, a markdown file at the repo root) and ensure the new folder-listing command/script can regenerate it.",
+      "reqIds": [
+        "REQ-97"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -822,6 +864,126 @@
       "id": "AR-63",
       "summary": "Change the SiteHeader (header) logo to the newly provided image file the user referenced as \"this\" (update header logo asset + reference).",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-64",
+      "summary": "Grant platform-admin access to Internet Identity Principal \"b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe\" in the backend so this user can successfully access the GreenPlantz Team/Admin portal after signing in (instead of seeing Access Denied). This must work in production without requiring any manual post-deploy UI call.",
+      "reqIds": [
+        "REQ-82"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-65",
+      "summary": "Persist the backend platform-admin allowlist/authorization state across canister upgrades so platform-admin access does not reset after redeployments/upgrades. If this requires a stable-state schema change, add a conditional Motoko migration in backend/migration.mo that preserves existing application data and safely initializes any new authorization/allowlist fields without trapping.",
+      "reqIds": [
+        "REQ-83"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-66",
+      "summary": "Add the newly uploaded image (image-10.png) to frontend static assets under frontend/public/assets/generated/ and generate a header-optimized transparent PNG logo at exactly 112px height (preserve aspect ratio; no distortion; no extra padding unless needed to avoid clipping) using a cache-busting filename.",
+      "reqIds": [
+        "REQ-84"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-67",
+      "summary": "Fix backend platform-admin authorization so that platform-admin access works in production without any manual post-deploy UI call: persist the platform-admin allowlist (AccessControl state) across canister upgrades/redeployments, and ensure isPlatformAdmin/getCallerRole consult the persisted allowlist.",
+      "reqIds": [
+        "REQ-86"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-68",
+      "summary": "Bootstrap initial platform-admin access in the backend during canister initialization and after upgrades (post-upgrade) by ensuring these Internet Identity Principal IDs are present in the platform-admin allowlist: b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe; 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae; robrk-rlmg7-56hiy-epen2-2jh4m-nqatd-jy2m5-dujk3-lsrep-yu33m-cqe; 2dvk3-yimfn-ghip2-q6c5t-ybd66-6ewxf-fn4nx-zdku7-5ke3s-u2wra-kqe.",
+      "reqIds": [
+        "REQ-87"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-69",
+      "summary": "If implementing admin allowlist persistence/bootstrapping requires changing the backend stable-state schema, add a conditional Motoko migration in backend/migration.mo that preserves existing application data (categories, products, garden centers, orders, user profiles, counters) and safely initializes any new authorization/allowlist stable fields without trapping.",
+      "reqIds": [
+        "REQ-88"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-70",
+      "summary": "Fix backend platform-admin authorization so the Internet Identity Principal ID shown in the uploaded screenshots (\"7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae\") is recognized as a Platform Admin in production (getCallerRole().isPlatformAdmin == true) immediately after deployment, without requiring any manual post-deploy UI call.",
+      "reqIds": [
+        "REQ-90"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-71",
+      "summary": "Persist the backend platform-admin allowlist across canister upgrades/redeployments so that platform-admin access does not reset after an upgrade; if this requires a stable-state schema change, add a conditional Motoko migration (backend/migration.mo) that safely preserves existing application data and initializes any new stable authorization/allowlist fields without trapping.",
+      "reqIds": [
+        "REQ-91"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-72",
+      "summary": "Fix backend platform-admin authorization so the Internet Identity Principal ID shown in the uploaded screenshot (\"7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae\") is recognized as a Platform Admin in production (getCallerRole().isPlatformAdmin == true) immediately after deployment, without requiring any manual post-deploy UI call.",
+      "reqIds": [
+        "REQ-92"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-73",
+      "summary": "Persist the backend platform-admin allowlist/authorization state across canister upgrades/redeployments so that platform-admin access does not reset after an upgrade.",
+      "reqIds": [
+        "REQ-93"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-74",
+      "summary": "Bootstrap initial platform-admin access in the backend during canister initialization and after upgrades (post-upgrade) by ensuring these Internet Identity Principal IDs are present in the platform-admin allowlist: b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe; 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae; robrk-rlmg7-56hiy-epen2-2jh4m-nqatd-jy2m5-dujk3-lsrep-yu33m-cqe; 2dvk3-yimfn-ghip2-q6c5t-ybd66-6ewxf-fn4nx-zdku7-5ke3s-u2wra-kqe.",
+      "reqIds": [
+        "REQ-94"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-75",
+      "summary": "If implementing admin allowlist persistence/bootstrapping requires changing the backend stable-state schema, add a conditional Motoko migration in backend/migration.mo that preserves existing application data (categories, products, garden centers, orders, user profiles, counters) and safely initializes any new stable authorization/allowlist fields without trapping.",
+      "reqIds": [
+        "REQ-95"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-76",
+      "summary": "Persist the backend platform-admin allowlist/authorization state across canister upgrades and redeployments so Team/Admin portal access does not reset after an upgrade. Update backend/main.mo so the AccessControl state used by isPlatformAdmin()/getCallerRole() is stored in stable state and is restored correctly after upgrades.",
+      "reqIds": [
+        "REQ-98"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-77",
+      "summary": "Bootstrap initial platform-admin access in the backend during canister initialization and after upgrades (post-upgrade) so production does not require any manual UI call to grant the first admin. Ensure these Internet Identity Principal IDs are present in the platform-admin allowlist and recognized by getCallerRole().isPlatformAdmin: b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe; 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae; robrk-rlmg7-56hiy-epen2-2jh4m-nqatd-jy2m5-dujk3-lsrep-yu33m-cqe; 2dvk3-yimfn-ghip2-q6c5t-ybd66-6ewxf-fn4nx-zdku7-5ke3s-u2wra-kqe.",
+      "reqIds": [
+        "REQ-99"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-78",
+      "summary": "If implementing REQ-98/REQ-99 requires a backend stable-state schema change, add a conditional Motoko migration in backend/migration.mo that preserves existing application data and safely initializes any new stable authorization/allowlist fields without trapping.",
+      "reqIds": [
+        "REQ-100"
+      ],
       "status": "pending"
     }
   ],

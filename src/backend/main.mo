@@ -8,9 +8,9 @@ import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   public type CategoryId = Nat;
   public type ProductId = Nat;
@@ -85,17 +85,14 @@ actor {
     subcategories : [CategoryWithSubcategories];
   };
 
-  public type PlantList = {
-    id : Nat;
-    name : Text;
-    description : Text;
-    createdBy : Principal;
-    plants : [Text];
+  public type FolderListing = {
+    rootDirectories : [Text];
+    backendDirectories : [Text];
+    frontendDirectories : [Text];
+    toolsDirectories : [Text];
+    deploymentDirectories : [Text];
+    documentationDirectories : [Text];
   };
-
-  var nextCategoryId = 0;
-  var nextProductId = 0;
-  var nextGardenCenterId = 0;
 
   let categories = Map.empty<CategoryId, Category>();
   let products = Map.empty<ProductId, Product>();
@@ -112,11 +109,67 @@ actor {
     }
   >();
   let orders = Map.empty<Principal, Map.Map<OrderId, Order>>();
-  let plantLists = Map.empty<Principal, PlantList>();
-  let accessControlState = AccessControl.initState();
+  var accessControlState = AccessControl.initState();
 
   include MixinAuthorization(accessControlState);
 
+  func bootstrapAdmins() {
+    let adminPrincipals = [
+      "b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe",
+      "7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae",
+      "robrk-rlmg7-56hiy-epen2-2jh4m-nqatd-jy2m5-dujk3-lsrep-yu33m-cqe",
+      "2dvk3-yimfn-ghip2-q6c5t-ybd66-6ewxf-fn4nx-zdku7-5ke3s-u2wra-kqe",
+    ];
+
+    for (principalId in adminPrincipals.values()) {
+      let principal = Principal.fromText(principalId);
+      AccessControl.assignRole(accessControlState, principal, principal, #admin);
+    };
+  };
+
+  //-------------------------------------
+  // Folder Listing (Mock Implementation)
+  //-------------------------------------
+  public shared ({ caller }) func getParsedFolderListing() : async FolderListing {
+    assertPlatformAdmin(caller);
+
+    // This is a hardcoded mock for demo purposes.
+    // Real implementation should be in a build tool or external script.
+    {
+      rootDirectories = [
+        "root: /backend",
+        "root: /frontend",
+        "root: /tools",
+        "root: /deployment",
+        "root: /documentation"
+      ];
+      backendDirectories = [
+        "backend: /authorization",
+        "backend: /core",
+        "backend: /utils"
+      ];
+      frontendDirectories = [
+        "frontend: /components",
+        "frontend: /pages",
+        "frontend: /styles"
+      ];
+      toolsDirectories = [
+        "tools: /scripts",
+        "tools: /ci"
+      ];
+      deploymentDirectories = [
+        "deployment: /dfx",
+        "deployment: /docker"
+      ];
+      documentationDirectories = [
+        "documentation: /docs"
+      ];
+    };
+  };
+
+  //-------------------------------------
+  // Core Garden Center Functionality
+  //-------------------------------------
   func containsSearchTerm(haystack : Text, needle : Text) : Bool {
     let haystackChars = haystack.toArray();
     let needleChars = needle.toArray();
@@ -274,7 +327,7 @@ actor {
       Runtime.trap("Unauthorized: Only authenticated users can create garden centers");
     };
 
-    let gardenCenterId = nextGardenCenterId;
+    let gardenCenterId = gardenCenters.size();
     let teamMembers = List.empty<TeamMember>();
     teamMembers.add({
       principal = caller;
@@ -291,7 +344,6 @@ actor {
     };
 
     gardenCenters.add(gardenCenterId, newGardenCenter);
-    nextGardenCenterId += 1;
     gardenCenterId;
   };
 
@@ -429,16 +481,16 @@ actor {
       };
     };
 
+    let categoryId = categories.size();
     let newCategory = {
-      id = nextCategoryId;
+      id = categoryId;
       name;
       description;
       parentCategoryId;
     };
 
-    categories.add(nextCategoryId, newCategory);
-    nextCategoryId += 1;
-    newCategory.id;
+    categories.add(categoryId, newCategory);
+    categoryId;
   };
 
   public shared ({ caller }) func addProduct(
@@ -461,8 +513,9 @@ actor {
       case (?category) { category.parentCategoryId };
     };
 
+    let productId = products.size();
     let newProduct = {
-      id = nextProductId;
+      id = productId;
       name;
       description;
       categoryId;
@@ -474,33 +527,15 @@ actor {
       imageUrls;
     };
 
-    products.add(nextProductId, newProduct);
-    nextProductId += 1;
-    newProduct.id;
+    products.add(productId, newProduct);
+    productId;
   };
 
   public shared ({ caller }) func initializeSeedData() : async () {
     assertPlatformAdmin(caller);
 
-    clearCategories();
-    clearProducts();
-    resetCategoryAndProductIds();
-
     addDefaultCategories();
     await addDemoProducts();
-  };
-
-  func clearCategories() {
-    categories.clear();
-  };
-
-  func clearProducts() {
-    products.clear();
-  };
-
-  func resetCategoryAndProductIds() {
-    nextCategoryId := 0;
-    nextProductId := 0;
   };
 
   func addDefaultCategories() {
@@ -605,7 +640,7 @@ actor {
     };
 
     let defaultProduct : Product = {
-      id = nextProductId;
+      id = 0;
       name = "Mystery Plant";
       description = "You never know what you'll get";
       priceCents = 999;
@@ -616,8 +651,7 @@ actor {
       gardenCenterId = 0;
       imageUrls = [];
     };
-    products.add(nextProductId, defaultProduct);
-    nextProductId += 1;
+    products.add(0, defaultProduct);
   };
 
   public shared ({ caller }) func seedDefaultCategories() : async () {
@@ -690,7 +724,7 @@ actor {
   };
 
   func addCategoriesSequentially(categoriesToAdd : [(Text, Text, ?Nat)]) {
-    var localNextCategoryId = nextCategoryId;
+    var localNextCategoryId = 0;
     for ((name, description, parentId) in categoriesToAdd.values()) {
       categories.add(
         localNextCategoryId,
@@ -703,6 +737,5 @@ actor {
       );
       localNextCategoryId += 1;
     };
-    nextCategoryId := localNextCategoryId;
   };
 };

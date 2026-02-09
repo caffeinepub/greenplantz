@@ -47,6 +47,14 @@ CategoryWithSubcategories.fill(
     'subcategories' : IDL.Vec(CategoryWithSubcategories),
   })
 );
+export const FolderListing = IDL.Record({
+  'rootDirectories' : IDL.Vec(IDL.Text),
+  'documentationDirectories' : IDL.Vec(IDL.Text),
+  'toolsDirectories' : IDL.Vec(IDL.Text),
+  'backendDirectories' : IDL.Vec(IDL.Text),
+  'frontendDirectories' : IDL.Vec(IDL.Text),
+  'deploymentDirectories' : IDL.Vec(IDL.Text),
+});
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
@@ -89,6 +97,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(CategoryWithSubcategories)],
       ['query'],
     ),
+  'getParsedFolderListing' : IDL.Func([], [FolderListing], []),
   'getProduct' : IDL.Func([ProductId], [Product], ['query']),
   'getProductsForCategory' : IDL.Func(
       [CategoryId],
@@ -159,6 +168,14 @@ export const idlFactory = ({ IDL }) => {
       'subcategories' : IDL.Vec(CategoryWithSubcategories),
     })
   );
+  const FolderListing = IDL.Record({
+    'rootDirectories' : IDL.Vec(IDL.Text),
+    'documentationDirectories' : IDL.Vec(IDL.Text),
+    'toolsDirectories' : IDL.Vec(IDL.Text),
+    'backendDirectories' : IDL.Vec(IDL.Text),
+    'frontendDirectories' : IDL.Vec(IDL.Text),
+    'deploymentDirectories' : IDL.Vec(IDL.Text),
+  });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
@@ -201,6 +218,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(CategoryWithSubcategories)],
         ['query'],
       ),
+    'getParsedFolderListing' : IDL.Func([], [FolderListing], []),
     'getProduct' : IDL.Func([ProductId], [Product], ['query']),
     'getProductsForCategory' : IDL.Func(
         [CategoryId],

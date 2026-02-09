@@ -1,93 +1,60 @@
 import Map "mo:core/Map";
-import Nat "mo:core/Nat";
 import List "mo:core/List";
+import AccessControl "authorization/access-control";
+import Nat "mo:core/Nat";
+import Principal "mo:core/Principal";
 
 module {
-  type OldCategory = {
-    id : Nat;
-    name : Text;
-    description : Text;
-  };
+  type CategoryId = Nat;
+  type ProductId = Nat;
+  type GardenCenterId = Nat;
+  type OrderId = Nat;
 
-  type NewCategory = {
-    id : Nat;
-    name : Text;
-    description : Text;
-    parentCategoryId : ?Nat;
-  };
-
-  type OldProduct = {
-    id : Nat;
-    name : Text;
-    description : Text;
-    categoryId : Nat;
-    priceCents : Nat;
-    stock : Nat;
-    active : Bool;
-    gardenCenterId : Nat;
-    imageUrls : [Text];
-  };
-
-  type NewProduct = {
-    id : Nat;
-    name : Text;
-    description : Text;
-    categoryId : Nat;
-    parentCategoryId : ?Nat;
-    priceCents : Nat;
-    stock : Nat;
-    active : Bool;
-    gardenCenterId : Nat;
-    imageUrls : [Text];
-  };
-
-  type OldGardenCenter = {
-    id : Nat;
-    name : Text;
-    location : Text;
-    teamMembers : List.List<{ principal : Principal; enabled : Bool }>;
+  type TeamMember = {
+    principal : Principal;
     enabled : Bool;
-    createdAt : Int;
   };
 
   type OldActor = {
-    nextCategoryId : Nat;
-    nextProductId : Nat;
-    nextGardenCenterId : Nat;
-    categories : Map.Map<Nat, OldCategory>;
-    products : Map.Map<Nat, OldProduct>;
-    gardenCenters : Map.Map<Nat, OldGardenCenter>;
+    categories : Map.Map<CategoryId, { id : CategoryId; name : Text; description : Text; parentCategoryId : ?CategoryId }>;
+    products : Map.Map<ProductId, { id : ProductId; name : Text; description : Text; categoryId : CategoryId; parentCategoryId : ?CategoryId; priceCents : Nat; stock : Nat; active : Bool; gardenCenterId : GardenCenterId; imageUrls : [Text] }>;
+    userProfiles : Map.Map<Principal, { name : Text }>;
+    gardenCenters : Map.Map<
+      GardenCenterId,
+      {
+        id : Nat;
+        name : Text;
+        location : Text;
+        teamMembers : List.List<TeamMember>;
+        enabled : Bool;
+        createdAt : Int;
+      }
+    >;
+    orders : Map.Map<Principal, Map.Map<OrderId, { id : OrderId; products : [{ productId : ProductId; quantity : Nat; pricePerItem : Nat }]; totalAmountCents : Nat; createdAt : Int; status : { #placed; #shipped; #delivered; #cancelled } }>>;
+    accessControlState : AccessControl.AccessControlState;
+    plantLists : Map.Map<Principal, { id : Nat; name : Text; description : Text; createdBy : Principal; plants : [Text] }>;
   };
 
   type NewActor = {
-    nextCategoryId : Nat;
-    nextProductId : Nat;
-    nextGardenCenterId : Nat;
-    categories : Map.Map<Nat, NewCategory>;
-    products : Map.Map<Nat, NewProduct>;
-    gardenCenters : Map.Map<Nat, OldGardenCenter>;
+    categories : Map.Map<CategoryId, { id : CategoryId; name : Text; description : Text; parentCategoryId : ?CategoryId }>;
+    products : Map.Map<ProductId, { id : ProductId; name : Text; description : Text; categoryId : CategoryId; parentCategoryId : ?CategoryId; priceCents : Nat; stock : Nat; active : Bool; gardenCenterId : GardenCenterId; imageUrls : [Text] }>;
+    userProfiles : Map.Map<Principal, { name : Text }>;
+    gardenCenters : Map.Map<
+      GardenCenterId,
+      {
+        id : Nat;
+        name : Text;
+        location : Text;
+        teamMembers : List.List<TeamMember>;
+        enabled : Bool;
+        createdAt : Int;
+      }
+    >;
+    orders : Map.Map<Principal, Map.Map<OrderId, { id : OrderId; products : [{ productId : ProductId; quantity : Nat; pricePerItem : Nat }]; totalAmountCents : Nat; createdAt : Int; status : { #placed; #shipped; #delivered; #cancelled } }>>;
+    accessControlState : AccessControl.AccessControlState;
   };
 
   public func run(old : OldActor) : NewActor {
-    let newCategories = old.categories.map<Nat, OldCategory, NewCategory>(
-      func(_id, oldCategory) {
-        { oldCategory with parentCategoryId = null };
-      }
-    );
-
-    let newProducts = old.products.map<Nat, OldProduct, NewProduct>(
-      func(_id, oldProduct) {
-        {
-          oldProduct with
-          parentCategoryId = null;
-        };
-      }
-    );
-
-    {
-      old with
-      categories = newCategories;
-      products = newProducts;
-    };
+    { categories = old.categories; products = old.products; userProfiles = old.userProfiles; gardenCenters = old.gardenCenters; orders = old.orders; accessControlState = old.accessControlState };
   };
 };

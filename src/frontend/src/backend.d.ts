@@ -31,6 +31,14 @@ export interface CallerRole {
     isCustomer: boolean;
     isPlatformAdmin: boolean;
 }
+export interface FolderListing {
+    rootDirectories: Array<string>;
+    documentationDirectories: Array<string>;
+    toolsDirectories: Array<string>;
+    backendDirectories: Array<string>;
+    frontendDirectories: Array<string>;
+    deploymentDirectories: Array<string>;
+}
 export type CategoryId = bigint;
 export type ProductId = bigint;
 export interface CategoryWithSubcategories {
@@ -61,6 +69,7 @@ export interface backendInterface {
     getCategoryByName(name: string): Promise<Category | null>;
     getCategoryPath(categoryId: CategoryId): Promise<Array<Category>>;
     getFullCategoryTaxonomy(): Promise<Array<CategoryWithSubcategories>>;
+    getParsedFolderListing(): Promise<FolderListing>;
     getProduct(productId: ProductId): Promise<Product>;
     getProductsForCategory(categoryId: CategoryId): Promise<Array<Product>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;

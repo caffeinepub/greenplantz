@@ -1,60 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Update SiteHeader to use newly provided cache-busted header logo asset",
-  "requirements": [
-    {
-      "id": "REQ-78",
-      "summary": "Add the user-provided header logo source image and a derived 112px-tall transparent PNG (cache-busted) under frontend/public/assets/generated/",
-      "acceptanceCriteria": [
-        "A new logo source image file is present under frontend/public/assets/generated/ (do not serve the image from the backend).",
-        "A derived header-optimized transparent PNG at exactly 112px height is present under frontend/public/assets/generated/ with a cache-busting filename.",
-        "The generated PNG preserves the logo aspect ratio (no stretching) and has no unnecessary padding unless required to avoid clipping."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/assets/generated/greenplantz-header-logo-user-upload.source.png",
-          "operation": "create",
-          "description": "Add the original uploaded header logo source image as a static frontend asset (no backend serving)."
-        },
-        {
-          "path": "frontend/public/assets/generated/greenplantz-header-logo-user-upload.dim_auto_x112.cb_20260209_02.png",
-          "operation": "create",
-          "description": "Add the derived header-optimized transparent PNG at exactly 112px height (preserve aspect ratio; no distortion; no extra padding unless needed to avoid clipping) using the specified cache-busting filename."
-        }
-      ]
-    },
-    {
-      "id": "REQ-79",
-      "summary": "Update only the SiteHeader home-link logo <img> src to the new cache-busted 112px-tall generated asset",
-      "acceptanceCriteria": [
-        "frontend/src/components/layout/SiteHeader.tsx header logo <img> src is updated to the new /assets/generated/<new-cache-busted-file>.png path.",
-        "No other parts of SiteHeader.tsx are modified besides the header logo <img> element.",
-        "The referenced file path exists in the built frontend output, and the header logo no longer appears broken at runtime."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/layout/SiteHeader.tsx",
-          "operation": "modify",
-          "description": "Modify ONLY the header logo <img> element (the <img> inside the home Link) to replace src \"/assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png\" with \"/assets/generated/greenplantz-header-logo-user-upload.dim_auto_x112.cb_20260209_02.png\"."
-        }
-      ]
-    },
-    {
-      "id": "REQ-80",
-      "summary": "Ensure the SiteHeader logo remains responsive and fits within the h-16 header by adjusting sizing classes only on the same <img> element if needed",
-      "acceptanceCriteria": [
-        "On mobile, tablet, and desktop breakpoints, the header logo remains fully visible within the header (h-16) without vertical overflow or cropping.",
-        "The logo image maintains its original aspect ratio (no distortion).",
-        "Any CSS/Tailwind class changes are confined to the same header logo <img> element in SiteHeader.tsx."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/layout/SiteHeader.tsx",
-          "operation": "modify",
-          "description": "If needed to prevent overflow within the h-16 header, adjust ONLY the Tailwind sizing/fit-related classes on the same logo <img> element (keep w-auto and object-contain behavior) to ensure it remains responsive and fully visible across breakpoints without distortion."
-        }
-      ]
-    }
-  ]
+  "title": "Frontend plan: no changes required for backend-only admin allowlist persistence/bootstrap fix",
+  "requirements": []
 }

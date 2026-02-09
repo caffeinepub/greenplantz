@@ -1,89 +1,75 @@
 {
   "kind": "build_request",
-  "title": "Update SiteHeader logo to the newly provided image",
-  "priority": "normal",
+  "title": "Fix Team/Admin portal access by persisting and bootstrapping platform-admin allowlist in backend",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-78",
-      "text": "Add the newly provided header logo image (the one the user referred to as \"this\") as a static asset under frontend/public/assets/generated/ and generate a header-optimized transparent PNG at exactly 112px height (preserve aspect ratio; no distortion; no extra padding unless needed to avoid clipping) using a cache-busting filename.",
-      "target": "frontend",
+      "id": "REQ-98",
+      "text": "Persist the backend platform-admin allowlist/authorization state across canister upgrades and redeployments so Team/Admin portal access does not reset after an upgrade. Update backend/main.mo so the AccessControl state used by isPlatformAdmin()/getCallerRole() is stored in stable state and is restored correctly after upgrades.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-6"
         ],
         "quotes": [
-          "change the header logo to this"
+          "now check all the files in it and clear the admin portal access issue"
         ]
       },
       "acceptanceCriteria": [
-        "A new logo source image file is present under frontend/public/assets/generated/ (do not serve the image from the backend).",
-        "A derived header-optimized transparent PNG at exactly 112px height is present under frontend/public/assets/generated/ with a cache-busting filename.",
-        "The generated PNG preserves the logo aspect ratio (no stretching) and has no unnecessary padding unless required to avoid clipping."
+        "After upgrading the canister, any previously granted platform-admin principals are still recognized as platform admins (no manual post-upgrade UI call required to restore access).",
+        "Calling getCallerRole() for a principal that was a platform admin before the upgrade returns isPlatformAdmin == true after the upgrade.",
+        "The Team/Admin portal access behavior is consistent across fresh deploys and subsequent upgrades (no regression back to Access Denied solely due to upgrade)."
       ]
     },
     {
-      "id": "REQ-79",
-      "text": "Update ONLY the SiteHeader logo <img> element (frontend/src/components/layout/SiteHeader.tsx, the <img> inside the home Link) to reference the newly generated cache-busted 112px-tall logo asset under /assets/generated/, replacing the current src \"/assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png\".",
-      "target": "frontend",
+      "id": "REQ-99",
+      "text": "Bootstrap initial platform-admin access in the backend during canister initialization and after upgrades (post-upgrade) so production does not require any manual UI call to grant the first admin. Ensure these Internet Identity Principal IDs are present in the platform-admin allowlist and recognized by getCallerRole().isPlatformAdmin: b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe; 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae; robrk-rlmg7-56hiy-epen2-2jh4m-nqatd-jy2m5-dujk3-lsrep-yu33m-cqe; 2dvk3-yimfn-ghip2-q6c5t-ybd66-6ewxf-fn4nx-zdku7-5ke3s-u2wra-kqe.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-6"
         ],
         "quotes": [
-          "change the header logo to this"
+          "now check all the files in it and clear the admin portal access issue"
         ]
       },
       "acceptanceCriteria": [
-        "frontend/src/components/layout/SiteHeader.tsx header logo <img> src is updated to the new /assets/generated/<new-cache-busted-file>.png path.",
-        "No other parts of SiteHeader.tsx are modified besides the header logo <img> element.",
-        "The referenced file path exists in the built frontend output, and the header logo no longer appears broken at runtime."
+        "On a fresh deploy (with no prior calls to grantAdminAccess), signing in as any of the listed principals and calling getCallerRole() returns isPlatformAdmin == true.",
+        "On a fresh deploy, an authenticated principal not in the bootstrap list receives isPlatformAdmin == false from getCallerRole().",
+        "After an upgrade, the listed principals remain platform admins even if no UI/API calls are made post-upgrade."
       ]
     },
     {
-      "id": "REQ-80",
-      "text": "Ensure the updated SiteHeader logo remains responsive and does not overflow the header height (the header container height is h-16) by adjusting sizing classes on ONLY the same SiteHeader logo <img> element if needed, while maintaining the logo’s aspect ratio.",
-      "target": "frontend",
+      "id": "REQ-100",
+      "text": "If implementing REQ-98/REQ-99 requires a backend stable-state schema change, add a conditional Motoko migration in backend/migration.mo that preserves existing application data and safely initializes any new stable authorization/allowlist fields without trapping.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-6"
         ],
         "quotes": [
-          "change the header logo to this"
+          "now check all the files in it and clear the admin portal access issue"
         ]
       },
       "acceptanceCriteria": [
-        "On mobile, tablet, and desktop breakpoints, the header logo remains fully visible within the header (h-16) without vertical overflow or cropping.",
-        "The logo image maintains its original aspect ratio (no distortion).",
-        "Any CSS/Tailwind class changes are confined to the same header logo <img> element in SiteHeader.tsx."
+        "When upgrading from the current deployed version, the canister upgrade completes without trapping.",
+        "Existing in-canister data (categories, products, garden centers, orders, user profiles, counters) remains available after the upgrade.",
+        "New stable authorization/allowlist fields are initialized and usable immediately after upgrade (no manual repair step)."
       ]
     }
   ],
   "constraints": [
-    "Use English for any user-facing text.",
-    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Do not serve generated images from the backend; all branding images must be static assets under frontend/public/assets/generated.",
-    "Modify ONLY the header logo <img> element in frontend/src/components/layout/SiteHeader.tsx (the <img> inside the home Link)."
+    "Backend must remain a single-actor Motoko canister; keep all Motoko logic in backend/main.mo (generate backend/migration.mo only if a state upgrade is required).",
+    "Do not edit files under frontend immutable paths (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "Use English for any user-facing text (UI copy already present; do not introduce non-English messages)."
   ],
   "nonGoals": [
-    "Do not change the footer logo or favicon assets unless the user explicitly requests it.",
-    "Do not redesign the header navigation, routing, or authentication behavior.",
-    "Do not introduce new backend APIs or storage for branding assets."
+    "Logo/favicon/header/footer asset changes.",
+    "Implementing new admin UI screens or changing existing portal routing beyond what is necessary to make platform-admin authorization work reliably.",
+    "Adding any third-party authentication provider (Internet Identity remains the only auth method)."
   ],
   "imageRequirements": {
-    "required": [
-      "Original uploaded header logo image from the user (greenplantz-header-logo-user-upload.source.png)",
-      "Header-optimized transparent logo at exactly 112px height, aspect ratio preserved (greenplantz-header-logo-user-upload.dim_auto_x112.cb_20260209_02.png)"
-    ],
+    "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

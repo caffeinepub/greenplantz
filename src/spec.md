@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Update the SiteHeader logo to use the newly provided header logo image and ensure it fits responsively within the header.
+**Goal:** Ensure Team/Admin portal access remains reliable by persisting the backend platform-admin allowlist across canister upgrades and by bootstrapping initial platform-admin principals on deploy/upgrade.
 
 **Planned changes:**
-- Add the newly provided header logo source image as a static asset under `frontend/public/assets/generated/`.
-- Generate a transparent PNG derived from that source at exactly 112px height (aspect ratio preserved) with a cache-busting filename under `frontend/public/assets/generated/`.
-- Update only the SiteHeader logo `<img>` (inside the home Link) in `frontend/src/components/layout/SiteHeader.tsx` to reference the new cache-busted 112px-tall asset, adjusting only that `<img>`’s sizing classes if needed to prevent overflow in the `h-16` header.
+- Update `backend/main.mo` to store the platform-admin allowlist/authorization state in stable state and restore it correctly after upgrades so `isPlatformAdmin()` / `getCallerRole()` do not reset.
+- Add backend initialization and post-upgrade bootstrapping so the specified Internet Identity principals are always included in the platform-admin allowlist without requiring any manual UI/API call.
+- If a stable-state schema change is required, add a safe conditional Motoko migration (in `backend/migration.mo` only if needed) that preserves existing canister data and initializes any new authorization fields without trapping.
 
-**User-visible outcome:** The header displays the new logo (not broken), and it stays fully visible and undistorted across mobile/tablet/desktop without overflowing the header.
+**User-visible outcome:** Admins keep access to the Team/Admin portal after upgrades, and the specified principals are recognized as platform admins immediately on fresh deploys and after upgrades without any manual recovery step.

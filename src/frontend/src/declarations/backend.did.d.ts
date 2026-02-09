@@ -26,6 +26,14 @@ export interface CategoryWithSubcategories {
   'category' : Category,
   'subcategories' : Array<CategoryWithSubcategories>,
 }
+export interface FolderListing {
+  'rootDirectories' : Array<string>,
+  'documentationDirectories' : Array<string>,
+  'toolsDirectories' : Array<string>,
+  'backendDirectories' : Array<string>,
+  'frontendDirectories' : Array<string>,
+  'deploymentDirectories' : Array<string>,
+}
 export type GardenCenterId = bigint;
 export interface Product {
   'id' : ProductId,
@@ -67,6 +75,7 @@ export interface _SERVICE {
   'getCategoryByName' : ActorMethod<[string], [] | [Category]>,
   'getCategoryPath' : ActorMethod<[CategoryId], Array<Category>>,
   'getFullCategoryTaxonomy' : ActorMethod<[], Array<CategoryWithSubcategories>>,
+  'getParsedFolderListing' : ActorMethod<[], FolderListing>,
   'getProduct' : ActorMethod<[ProductId], Product>,
   'getProductsForCategory' : ActorMethod<[CategoryId], Array<Product>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,

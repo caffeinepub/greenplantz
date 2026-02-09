@@ -113,6 +113,14 @@ export interface CallerRole {
     isCustomer: boolean;
     isPlatformAdmin: boolean;
 }
+export interface FolderListing {
+    rootDirectories: Array<string>;
+    documentationDirectories: Array<string>;
+    toolsDirectories: Array<string>;
+    backendDirectories: Array<string>;
+    frontendDirectories: Array<string>;
+    deploymentDirectories: Array<string>;
+}
 export type CategoryId = bigint;
 export type ProductId = bigint;
 export interface CategoryWithSubcategories {
@@ -144,6 +152,7 @@ export interface backendInterface {
     getCategoryByName(name: string): Promise<Category | null>;
     getCategoryPath(categoryId: CategoryId): Promise<Array<Category>>;
     getFullCategoryTaxonomy(): Promise<Array<CategoryWithSubcategories>>;
+    getParsedFolderListing(): Promise<FolderListing>;
     getProduct(productId: ProductId): Promise<Product>;
     getProductsForCategory(categoryId: CategoryId): Promise<Array<Product>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
@@ -384,6 +393,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getFullCategoryTaxonomy();
             return from_candid_vec_n15(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getParsedFolderListing(): Promise<FolderListing> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getParsedFolderListing();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getParsedFolderListing();
+            return result;
         }
     }
     async getProduct(arg0: ProductId): Promise<Product> {
