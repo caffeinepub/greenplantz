@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 47,
+  "projectStateVersion": 49,
   "summary": "Build a website and mobile app for GreenPlantz, an online store selling garden products and plants, with separate role-based logins for GreenPlantz team admins, Garden Nursery owners/teams, and Customers, including nursery-level management capabilities.",
   "architectural_notes": [
     "Introduce RBAC with distinct roles (GreenPlantz admin, nursery owner/team, customer) and permissions for product/nursery management and account disabling/removal.",
@@ -24,7 +24,7 @@
     "Category feature not working (user reports product category selection/filtering is broken)."
   ],
   "isFixRequest": true,
-  "imageRequirements": "## Required Images\n- Original uploaded image (image-9.png)\n- Header-optimized transparent logo derived from image-9.png at exactly 112px height (greenplantz-logo-image-9.dim_auto_x112.cb_20260209_XX.png)\n- Favicon PNG 16x16 derived from image-9.png (favicon-16x16.cb_20260209_XX.png)\n- Favicon PNG 32x32 derived from image-9.png (favicon-32x32.cb_20260209_XX.png)\n- Favicon ICO derived from image-9.png (favicon.cb_20260209_XX.ico)",
+  "imageRequirements": "## Required Images\n- Original uploaded header logo image from the user (greenplantz-header-logo-user-upload.source.png)\n- Header-optimized transparent logo at exactly 112px height, aspect ratio preserved (greenplantz-header-logo-user-upload.dim_auto_x112.cb_20260209_02.png)",
   "existing_features": [
     {
       "id": "feature-create-a-greenplantz-storefront-web-app-that-is-fully-responsive-mobile-first-and-functions-as-the-website-and-app-experience-single-react-app-with-layouts-optimized-for-desktop-tablet-and-phone",
@@ -457,6 +457,30 @@
         "REQ-77"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-the-newly-provided-header-logo-image-the-one-the-user-referred-to-as-this-as-a-static-asset-under-frontend-public-assets-generated-and-generate-a-header-optimized-transparent-png-at-exactly-112px-height-preserve-aspect-ratio-no-distortion-no-extra-padding-unless-needed-to-avoid-clipping-using-a-cache-busting-filename",
+      "title": "Add the newly provided header logo image (the one the user referred to as \"this\") as a static asset under frontend/public/assets/generated/ and generate a header-optimized transparent PNG at exactly 112px height (preserve aspect ratio; no distortion; no extra padding unless needed to avoid clipping) using a cache-busting filename.",
+      "reqIds": [
+        "REQ-78"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-only-the-siteheader-logo-img-element-frontend-src-components-layout-siteheader-tsx-the-img-inside-the-home-link-to-reference-the-newly-generated-cache-busted-112px-tall-logo-asset-under-assets-generated-replacing-the-current-src-assets-generated-greenplantz-logo-image-9-dim-auto-x112-cb-20260209-01-png",
+      "title": "Update ONLY the SiteHeader logo <img> element (frontend/src/components/layout/SiteHeader.tsx, the <img> inside the home Link) to reference the newly generated cache-busted 112px-tall logo asset under /assets/generated/, replacing the current src \"/assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png\".",
+      "reqIds": [
+        "REQ-79"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-updated-siteheader-logo-remains-responsive-and-does-not-overflow-the-header-height-the-header-container-height-is-h-16-by-adjusting-sizing-classes-on-only-the-same-siteheader-logo-img-element-if-needed-while-maintaining-the-logo-s-aspect-ratio",
+      "title": "Ensure the updated SiteHeader logo remains responsive and does not overflow the header height (the header container height is h-16) by adjusting sizing classes on ONLY the same SiteHeader logo <img> element if needed, while maintaining the logo’s aspect ratio.",
+      "reqIds": [
+        "REQ-80"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -791,6 +815,12 @@
     {
       "id": "AR-62",
       "summary": "Use the Google Drive image (https://drive.google.com/file/d/1iB6Xi1-SgExGrapOP06lvPDzkenURn30/view?usp=drive_link) as the official GreenPlantz logo by uploading it into frontend static assets and wiring it into the SiteHeader (and branding areas as needed).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-63",
+      "summary": "Change the SiteHeader (header) logo to the newly provided image file the user referenced as \"this\" (update header logo asset + reference).",
       "reqIds": [],
       "status": "pending"
     }

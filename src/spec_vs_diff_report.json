@@ -1,67 +1,31 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T07:26:11.314Z",
-  "summary": "Header, footer, and index.html were updated to reference new cache-busted logo/favicon filenames derived from image-9, but the diff shows no new static asset files were added under frontend/public/assets/generated/. Several additional, unrequested footer content changes and metadata/state file updates were also made.",
+  "generatedAt": "2026-02-09T07:33:35.061Z",
+  "summary": "SiteHeader logo <img> src was updated to the new cache-busted 112px asset path and sizing classes were adjusted on that same <img>. However, the diff summary shows no new static asset files added under frontend/public/assets/generated/, and there were additional non-requested modifications to repo metadata/summary files.",
   "missing_requirements": [
     {
-      "id": "REQ-73",
-      "requirement": "Add the uploaded image (image-9.png) under frontend/public/assets/generated/ and add a derived cache-busted transparent header logo PNG at exactly 112px height under the same directory.",
-      "reason": "The diff reports \"Added: 0\" and shows no new files under frontend/public/assets/generated/, so there is no evidence that image-9.png or the derived 112px logo PNG were actually added to the repository.",
+      "id": "REQ-78",
+      "requirement": "Add the newly provided header logo source image under frontend/public/assets/generated/ and include a derived header-optimized transparent PNG at exactly 112px height with a cache-busting filename.",
+      "reason": "The diff summary reports \"Added: 0\" and lists no newly added files under frontend/public/assets/generated/, so the required static asset files are not evidenced as present in this change set.",
       "evidence": [
-        "File diff summary (Added: 0, Modified: 5, Removed: 0)",
-        "frontend/src/components/layout/SiteHeader.tsx (references /assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png, but file not shown as added)",
-        "frontend/src/components/layout/SiteFooter.tsx (references /assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png, but file not shown as added)"
-      ]
-    },
-    {
-      "id": "REQ-76",
-      "requirement": "Generate new favicon assets (16x16 PNG, 32x32 PNG, and .ico) under frontend/public/assets/generated/ with cache-busting filenames, and update frontend/index.html to reference them.",
-      "reason": "frontend/index.html was updated to reference cache-busted favicon filenames, but the diff shows no new favicon files were added under frontend/public/assets/generated/ (Added: 0).",
-      "evidence": [
-        "frontend/index.html (references /assets/generated/favicon.cb_20260209_01.ico, favicon-32x32.cb_20260209_01.png, favicon-16x16.cb_20260209_01.png)",
-        "File diff summary (Added: 0, Modified: 5, Removed: 0)"
-      ]
-    },
-    {
-      "id": "REQ-77",
-      "requirement": "Search the frontend codebase for any remaining references to the previous logo asset path (/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png) and update them so the new logo is used everywhere.",
-      "reason": "The diff shows updates in SiteHeader.tsx and SiteFooter.tsx, but provides no evidence of a repo-wide update or confirmation that no other references remain.",
-      "evidence": [
-        "frontend/src/components/layout/SiteHeader.tsx",
-        "frontend/src/components/layout/SiteFooter.tsx",
-        "frontend-file-summaries.txt (does not provide evidence of a completed search/removal of all old references)"
+        "File diff summary: \"Added: 0\" (no added files listed)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Expanded/changed footer content (service areas list, quick links including portal login links, contact details like WhatsApp/Instagram/email, and attribution text).",
-      "reason": "The BuildRequest only asked to update the footer logo asset path; it explicitly lists non-goals such as changing navigation beyond updating logo/favicons.",
+      "description": "Modified repository metadata/summary files not requested by the BuildRequest (frontend-file-summaries.txt and project_state.json).",
+      "reason": "The BuildRequest constraints specify modifying ONLY the header logo <img> element in frontend/src/components/layout/SiteHeader.tsx. Changes to these additional files are outside that scope.",
       "evidence": [
-        "frontend/src/components/layout/SiteFooter.tsx"
-      ]
-    },
-    {
-      "description": "Updated frontend-file-summaries.txt content describing various app features.",
-      "reason": "Not requested; BuildRequest focuses on adding static logo/favicon assets and updating references.",
-      "evidence": [
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Updated project_state.json (project state/version/summary metadata).",
-      "reason": "Not requested; BuildRequest focuses on static assets and logo/favicon wiring.",
-      "evidence": [
-        "project_state.json"
+        "frontend-file-summaries.txt (modified)",
+        "project_state.json (modified)"
       ]
     }
   ],
   "confidence": 0.78,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/src/components/layout/SiteFooter.tsx",
     "frontend/src/components/layout/SiteHeader.tsx",
     "project_state.json"
   ]

@@ -1,123 +1,89 @@
 {
   "kind": "build_request",
-  "title": "Upload image-9.png and use it as the GreenPlantz logo (header, footer, favicon)",
+  "title": "Update SiteHeader logo to the newly provided image",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-73",
-      "text": "Add the uploaded image (image-9.png) to frontend static assets under frontend/public/assets/generated/, and create a cache-busted, header-optimized transparent PNG logo derived from it at exactly 112px height (preserve aspect ratio; no distortion; no extra padding unless needed to avoid clipping).",
+      "id": "REQ-78",
+      "text": "Add the newly provided header logo image (the one the user referred to as \"this\") as a static asset under frontend/public/assets/generated/ and generate a header-optimized transparent PNG at exactly 112px height (preserve aspect ratio; no distortion; no extra padding unless needed to avoid clipping) using a cache-busting filename.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-2"
+          "msg-4"
         ],
         "quotes": [
-          "https://drive.google.com/file/d/1iB6Xi1-SgExGrapOP06lvPDzkenURn30/view?usp=drive_link",
-          "upload this photo",
-          "as logo"
+          "change the header logo to this"
         ]
       },
       "acceptanceCriteria": [
-        "The repository contains the original uploaded file under frontend/public/assets/generated/ (image-9.png).",
-        "A new derived logo PNG exists under frontend/public/assets/generated/ with a cache-busting filename and 112px height, transparent background preserved where applicable.",
-        "The derived logo PNG renders correctly when loaded directly via /assets/generated/<filename>."
+        "A new logo source image file is present under frontend/public/assets/generated/ (do not serve the image from the backend).",
+        "A derived header-optimized transparent PNG at exactly 112px height is present under frontend/public/assets/generated/ with a cache-busting filename.",
+        "The generated PNG preserves the logo aspect ratio (no stretching) and has no unnecessary padding unless required to avoid clipping."
       ]
     },
     {
-      "id": "REQ-74",
-      "text": "Update the site header logo image to use the newly generated cache-busted logo asset (replace the current src \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" in frontend/src/components/layout/SiteHeader.tsx).",
+      "id": "REQ-79",
+      "text": "Update ONLY the SiteHeader logo <img> element (frontend/src/components/layout/SiteHeader.tsx, the <img> inside the home Link) to reference the newly generated cache-busted 112px-tall logo asset under /assets/generated/, replacing the current src \"/assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png\".",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-2"
+          "msg-4"
         ],
         "quotes": [
-          "upload this photo",
-          "as logo"
+          "change the header logo to this"
         ]
       },
       "acceptanceCriteria": [
-        "frontend/src/components/layout/SiteHeader.tsx references the new /assets/generated/<new-logo-file>.png path.",
-        "The header logo remains responsive and does not overflow the header height (header container is h-16), maintaining aspect ratio."
+        "frontend/src/components/layout/SiteHeader.tsx header logo <img> src is updated to the new /assets/generated/<new-cache-busted-file>.png path.",
+        "No other parts of SiteHeader.tsx are modified besides the header logo <img> element.",
+        "The referenced file path exists in the built frontend output, and the header logo no longer appears broken at runtime."
       ]
     },
     {
-      "id": "REQ-75",
-      "text": "Update the website footer brand logo to use the newly generated cache-busted logo asset (replace the current src \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" in frontend/src/components/layout/SiteFooter.tsx).",
+      "id": "REQ-80",
+      "text": "Ensure the updated SiteHeader logo remains responsive and does not overflow the header height (the header container height is h-16) by adjusting sizing classes on ONLY the same SiteHeader logo <img> element if needed, while maintaining the logo’s aspect ratio.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-2"
+          "msg-4"
         ],
         "quotes": [
-          "upload this photo",
-          "as logo"
+          "change the header logo to this"
         ]
       },
       "acceptanceCriteria": [
-        "frontend/src/components/layout/SiteFooter.tsx references the new /assets/generated/<new-logo-file>.png path.",
-        "The footer brand logo displays correctly on mobile and desktop layouts."
-      ]
-    },
-    {
-      "id": "REQ-76",
-      "text": "Generate new favicon assets derived from the uploaded image-9.png (16x16 PNG, 32x32 PNG, and .ico) with cache-busting filenames under frontend/public/assets/generated/, and update frontend/index.html to reference the new favicon filenames (replacing the current favicon.cb_20260209.ico, favicon-32x32.cb_20260209.png, favicon-16x16.cb_20260209.png).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1",
-          "msg-2"
-        ],
-        "quotes": [
-          "upload this photo",
-          "as logo"
-        ]
-      },
-      "acceptanceCriteria": [
-        "New favicon files exist under frontend/public/assets/generated/ and are referenced in frontend/index.html.",
-        "A hard refresh shows the updated favicon in the browser tab (no broken favicon requests in the network panel)."
-      ]
-    },
-    {
-      "id": "REQ-77",
-      "text": "Search the frontend codebase for any remaining references to the previous logo asset path \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" (and any other older GreenPlantz logo assets under /assets/generated/) and update them to the newly generated cache-busted logo asset so the new logo is used everywhere it appears.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1",
-          "msg-2"
-        ],
-        "quotes": [
-          "as logo"
-        ]
-      },
-      "acceptanceCriteria": [
-        "No references remain to \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" in the frontend source after the change.",
-        "All brand-logo instances in the UI use the new cache-busted asset path(s)."
+        "On mobile, tablet, and desktop breakpoints, the header logo remains fully visible within the header (h-16) without vertical overflow or cropping.",
+        "The logo image maintains its original aspect ratio (no distortion).",
+        "Any CSS/Tailwind class changes are confined to the same header logo <img> element in SiteHeader.tsx."
       ]
     }
   ],
   "constraints": [
     "Use English for any user-facing text.",
-    "Do not serve generated images from the backend; keep them as static assets under frontend/public/assets/generated/.",
-    "Do not modify any files under frontend/src/components/ui or other paths listed in frontend.immutablePaths."
+    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Do not serve generated images from the backend; all branding images must be static assets under frontend/public/assets/generated.",
+    "Modify ONLY the header logo <img> element in frontend/src/components/layout/SiteHeader.tsx (the <img> inside the home Link)."
   ],
   "nonGoals": [
-    "Changing backend logic or data models.",
-    "Adding new pages or changing navigation beyond updating logo/favicons.",
-    "Implementing image uploading by users at runtime (this request is for static asset inclusion)."
+    "Do not change the footer logo or favicon assets unless the user explicitly requests it.",
+    "Do not redesign the header navigation, routing, or authentication behavior.",
+    "Do not introduce new backend APIs or storage for branding assets."
   ],
   "imageRequirements": {
     "required": [
-      "Original uploaded image (image-9.png)",
-      "Header-optimized transparent logo derived from image-9.png at exactly 112px height (greenplantz-logo-image-9.dim_auto_x112.cb_20260209_XX.png)",
-      "Favicon PNG 16x16 derived from image-9.png (favicon-16x16.cb_20260209_XX.png)",
-      "Favicon PNG 32x32 derived from image-9.png (favicon-32x32.cb_20260209_XX.png)",
-      "Favicon ICO derived from image-9.png (favicon.cb_20260209_XX.ico)"
+      "Original uploaded header logo image from the user (greenplantz-header-logo-user-upload.source.png)",
+      "Header-optimized transparent logo at exactly 112px height, aspect ratio preserved (greenplantz-header-logo-user-upload.dim_auto_x112.cb_20260209_02.png)"
     ],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }
