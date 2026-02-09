@@ -9,10 +9,21 @@ export function useGetCallerRole() {
     queryKey: ['callerRole'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.getCallerRole();
+      try {
+        return await actor.getCallerRole();
+      } catch (error) {
+        console.error('Error fetching caller role:', error);
+        // Return a default guest role on error instead of throwing
+        return {
+          isPlatformAdmin: false,
+          isCustomer: false,
+          gardenCenterMemberships: [],
+        };
+      }
     },
     enabled: !!actor && !actorFetching,
-    retry: false,
+    retry: 1,
+    staleTime: 30000, // Cache for 30 seconds
   });
 
   return {

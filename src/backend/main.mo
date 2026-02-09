@@ -9,6 +9,8 @@ import Runtime "mo:core/Runtime";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
+
+
 actor {
   public type CategoryId = Nat;
   public type ProductId = Nat;
@@ -83,14 +85,17 @@ actor {
     subcategories : [CategoryWithSubcategories];
   };
 
-  stable var initialized = false;
+  public type PlantList = {
+    id : Nat;
+    name : Text;
+    description : Text;
+    createdBy : Principal;
+    plants : [Text];
+  };
 
-  var accessControlState = AccessControl.initState();
-  include MixinAuthorization(accessControlState);
-
-  stable var nextCategoryId = 0;
-  stable var nextProductId = 0;
-  stable var nextGardenCenterId = 0;
+  var nextCategoryId = 0;
+  var nextProductId = 0;
+  var nextGardenCenterId = 0;
 
   let categories = Map.empty<CategoryId, Category>();
   let products = Map.empty<ProductId, Product>();
@@ -107,6 +112,10 @@ actor {
     }
   >();
   let orders = Map.empty<Principal, Map.Map<OrderId, Order>>();
+  let plantLists = Map.empty<Principal, PlantList>();
+  let accessControlState = AccessControl.initState();
+
+  include MixinAuthorization(accessControlState);
 
   func containsSearchTerm(haystack : Text, needle : Text) : Bool {
     let haystackChars = haystack.toArray();
@@ -232,9 +241,6 @@ actor {
   };
 
   public query ({ caller }) func getCallerRole() : async CallerRole {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can query role information");
-    };
     {
       isPlatformAdmin = isPlatformAdmin(caller);
       isCustomer = AccessControl.hasPermission(accessControlState, caller, #user);
@@ -359,10 +365,12 @@ actor {
   };
 
   public query ({ caller }) func getCategories() : async [Category] {
+    ensureDefaultCategoriesExist();
     categories.values().toArray();
   };
 
   public query ({ caller }) func getFullCategoryTaxonomy() : async [CategoryWithSubcategories] {
+    ensureDefaultCategoriesExist();
     let roots = List.empty<CategoryWithSubcategories>();
 
     for ((_, category) in categories.entries()) {
@@ -474,136 +482,125 @@ actor {
   public shared ({ caller }) func initializeSeedData() : async () {
     assertPlatformAdmin(caller);
 
+    clearCategories();
+    clearProducts();
+    resetCategoryAndProductIds();
+
+    addDefaultCategories();
+    await addDemoProducts();
+  };
+
+  func clearCategories() {
     categories.clear();
+  };
+
+  func clearProducts() {
     products.clear();
+  };
+
+  func resetCategoryAndProductIds() {
     nextCategoryId := 0;
     nextProductId := 0;
+  };
 
-    categories.add(0, {
-      id = 0;
-      name = "Uncategorized";
-      description = "Uncategorized";
-      parentCategoryId = null;
-    });
+  func addDefaultCategories() {
+    ensureDefaultCategoriesExist();
+  };
 
-    let plantsCategoryId = nextCategoryId;
-    categories.add(plantsCategoryId, {
-      id = plantsCategoryId;
-      name = "Plants";
-      description = "All types of plants";
-      parentCategoryId = null;
-    });
-    nextCategoryId += 1;
+  func getCategoryIdByName(name : Text) : ?CategoryId {
+    let normalizedName = normalizeCategoryName(name);
 
-    let seedsCategoryId = nextCategoryId;
-    categories.add(seedsCategoryId, {
-      id = seedsCategoryId;
-      name = "Seeds";
-      description = "Seed varieties";
-      parentCategoryId = null;
-    });
-    nextCategoryId += 1;
+    let categoryNameToIdMap : [(Text, Nat)] = [
+      ("uncategorized", 0),
+      ("plants", 1),
+      ("seeds", 2),
+      ("pots", 3),
+      ("fertilizer", 4),
+      ("indoorplants", 5),
+      ("outdoorplants", 6),
+      ("ceramicpots", 7),
+      ("plasticpots", 8),
+      ("fiberpots", 9),
+    ];
 
-    let potsCategoryId = nextCategoryId;
-    categories.add(potsCategoryId, {
-      id = potsCategoryId;
-      name = "Pots";
-      description = "Container pots for gardening";
-      parentCategoryId = null;
-    });
-    nextCategoryId += 1;
+    switch (categoryNameToIdMap.find(func((catName, _)) { catName == normalizedName })) {
+      case (?(catName, catId)) { ?catId };
+      case (null) { null };
+    };
+  };
 
-    let fertilizerCategoryId = nextCategoryId;
-    categories.add(fertilizerCategoryId, {
-      id = fertilizerCategoryId;
-      name = "Fertilizers";
-      description = "Soil conditioners";
-      parentCategoryId = null;
-    });
-    nextCategoryId += 1;
+  func normalizeCategoryName(name : Text) : Text {
+    let replacements = [
+      (" ", ""),
+      ("_", ""),
+      ("/", ""),
+      ("plants", "plants"),
+      ("pots", "pots")
+    ];
 
-    let indoorPlantsCategoryId = nextCategoryId;
-    categories.add(indoorPlantsCategoryId, {
-      id = indoorPlantsCategoryId;
-      name = "Indoor Plants";
-      description = "Plants suited for indoors";
-      parentCategoryId = ?plantsCategoryId;
-    });
-    nextCategoryId += 1;
+    let processedName = normalizeText(name, replacements);
+    convertToLower(processedName);
+  };
 
-    let outdoorPlantsCategoryId = nextCategoryId;
-    categories.add(outdoorPlantsCategoryId, {
-      id = outdoorPlantsCategoryId;
-      name = "Outdoor Plants";
-      description = "Plants suited for outdoors";
-      parentCategoryId = ?plantsCategoryId;
-    });
-    nextCategoryId += 1;
+  func normalizeText(text : Text, replacements : [(Text, Text)]) : Text {
+    var normalizedText = text;
+    for ((from, to) in replacements.values()) {
+      normalizedText := normalizedText.replace(#text from, to);
+    };
+    normalizedText;
+  };
 
-    let ceramicPotsCategoryId = nextCategoryId;
-    categories.add(ceramicPotsCategoryId, {
-      id = ceramicPotsCategoryId;
-      name = "Ceramic Pots";
-      description = "Ceramic pots for planting";
-      parentCategoryId = ?potsCategoryId;
-    });
-    nextCategoryId += 1;
-
-    let plasticPotsCategoryId = nextCategoryId;
-    categories.add(plasticPotsCategoryId, {
-      id = plasticPotsCategoryId;
-      name = "Plastic Pots";
-      description = "Plastic pots for gardening";
-      parentCategoryId = ?potsCategoryId;
-    });
-    nextCategoryId += 1;
-
-    let fiberPotsCategoryId = nextCategoryId;
-    categories.add(fiberPotsCategoryId, {
-      id = fiberPotsCategoryId;
-      name = "Fiber Pots";
-      description = "Pots made from natural fibers";
-      parentCategoryId = ?potsCategoryId;
-    });
-    nextCategoryId += 1;
-
-    switch (categories.get(indoorPlantsCategoryId)) {
-      case (null) { Runtime.trap("Indoor Plants category not found") };
-      case (_) {
-        let plantProduct : Product = {
-          id = nextProductId;
-          name = "Snake Plant";
-          description = "Low maintenance indoor plant";
-          categoryId = indoorPlantsCategoryId;
-          parentCategoryId = ?indoorPlantsCategoryId;
-          priceCents = 1999;
-          stock = 20;
-          active = true;
-          gardenCenterId = 0;
-          imageUrls = [];
+  func convertToLower(text : Text) : Text {
+    let lowerText = text.toArray().map(
+      func(c) {
+        if (c >= 'A' and c <= 'Z') {
+          Char.fromNat32(c.toNat32() + 32);
+        } else {
+          c;
         };
-        products.add(nextProductId, plantProduct);
-        nextProductId += 1;
+      }
+    );
+    Text.fromArray(lowerText);
+  };
+
+  func addDemoProducts() : async () {
+    switch (getCategoryIdByName("indoorplants")) {
+      case (null) { Runtime.trap("Indoor Plants category not found") };
+      case (?indoorPlantsCategoryId) {
+        switch (categories.get(indoorPlantsCategoryId)) {
+          case (null) { Runtime.trap("Indoor Plants category not found") };
+          case (_) {
+            ignore await addProduct(
+              "Snake Plant",
+              "Low maintenance indoor plant",
+              indoorPlantsCategoryId,
+              1999,
+              20,
+              0,
+              [],
+            );
+          };
+        };
       };
     };
 
-    switch (categories.get(ceramicPotsCategoryId)) {
+    switch (getCategoryIdByName("ceramicpots")) {
       case (null) { Runtime.trap("Ceramic Pots category not found") };
-      case (_) {
-        let potProduct : Product = {
-          id = nextProductId;
-          name = "Blue Ceramic Pot";
-          description = "Decorative indoor planter";
-          categoryId = ceramicPotsCategoryId;
-          parentCategoryId = ?ceramicPotsCategoryId;
-          priceCents = 899;
-          stock = 30;
-          active = true;
-          gardenCenterId = 0;
-          imageUrls = [];
+      case (?ceramicPotsCategoryId) {
+        switch (categories.get(ceramicPotsCategoryId)) {
+          case (null) { Runtime.trap("Ceramic Pots category not found") };
+          case (_) {
+            ignore await addProduct(
+              "Blue Ceramic Pot",
+              "Decorative indoor planter",
+              ceramicPotsCategoryId,
+              899,
+              30,
+              0,
+              [],
+            );
+          };
         };
-        products.add(nextProductId, potProduct);
-        nextProductId += 1;
       };
     };
 
@@ -621,5 +618,91 @@ actor {
     };
     products.add(nextProductId, defaultProduct);
     nextProductId += 1;
+  };
+
+  public shared ({ caller }) func seedDefaultCategories() : async () {
+    assertPlatformAdmin(caller);
+
+    ensureDefaultCategoriesExist();
+  };
+
+  public query ({ caller }) func getCategoryByName(name : Text) : async ?Category {
+    switch (getCategoryIdByName(name)) {
+      case (null) { null };
+      case (?catId) { categories.get(catId) };
+    };
+  };
+
+  public query ({ caller }) func getCategoryPath(categoryId : CategoryId) : async [Category] {
+    let path = List.empty<Category>();
+    var currentCatId = ?categoryId;
+
+    while (switch (currentCatId) { case (null) { false }; case (_) { true } }) {
+      switch (currentCatId, categories.get(switch (currentCatId) { case (null) { 0 }; case (?id) { id } })) {
+        case (?(catId), ?cat) {
+          path.add(cat);
+          currentCatId := cat.parentCategoryId;
+        };
+        case (_) { currentCatId := null };
+      };
+    };
+
+    path.toArray();
+  };
+
+  public shared ({ caller }) func upsertProductStock(productId : ProductId, gardenCenterId : GardenCenterId, newStock : Nat) : async () {
+    assertGardenCenterMember(gardenCenterId, caller);
+    switch (products.get(productId)) {
+      case (null) { Runtime.trap("Product not found") };
+      case (?product) {
+        if (product.gardenCenterId != gardenCenterId) {
+          Runtime.trap("Product does not belong to this garden center");
+        };
+        let updatedProduct = { product with stock = newStock };
+        products.add(productId, updatedProduct);
+      };
+    };
+  };
+
+  public shared ({ caller }) func bulkUpdateStocks(stockUpdates : [(ProductId, GardenCenterId, Nat)]) : async () {
+    assertPlatformAdmin(caller);
+
+    for ((productId, gardenCenterId, newStock) in stockUpdates.values()) {
+      await upsertProductStock(productId, gardenCenterId, newStock);
+    };
+  };
+
+  func ensureDefaultCategoriesExist() {
+    if (categories.isEmpty()) {
+      addCategoriesSequentially([
+        ("Uncategorized", "Uncategorized", null),
+        ("Plants", "All types of plants", null),
+        ("Seeds", "Seed varieties", null),
+        ("Pots", "Container pots for gardening", null),
+        ("Fertilizers", "Soil conditioners", null),
+        ("Indoor Plants", "Plants suited for indoors", ?1),
+        ("Outdoor Plants", "Plants suited for outdoors", ?1),
+        ("Ceramic Pots", "Ceramic pots for planting", ?3),
+        ("Plastic Pots", "Plastic pots for gardening", ?3),
+        ("Fiber Pots", "Pots made from natural fibers", ?3)
+      ]);
+    };
+  };
+
+  func addCategoriesSequentially(categoriesToAdd : [(Text, Text, ?Nat)]) {
+    var localNextCategoryId = nextCategoryId;
+    for ((name, description, parentId) in categoriesToAdd.values()) {
+      categories.add(
+        localNextCategoryId,
+        {
+          id = localNextCategoryId;
+          name;
+          description;
+          parentCategoryId = parentId;
+        },
+      );
+      localNextCategoryId += 1;
+    };
+    nextCategoryId := localNextCategoryId;
   };
 };

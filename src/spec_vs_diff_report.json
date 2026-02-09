@@ -1,46 +1,68 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T19:20:31.074Z",
-  "summary": "The diff shows minor backend authorization wiring (an `accessControlState` variable initialized with `AccessControl.initState()` and mixed in via `MixinAuthorization`) but does not provide evidence of (a) bootstrapping the specified platform-admin principals on init/post-upgrade, (b) persisting the admin allowlist across upgrades via stable state, or (c) adding a migration. Additionally, `project_state.json` was modified though it is not part of the requested backend fix.",
+  "generatedAt": "2026-02-09T07:26:11.314Z",
+  "summary": "Header, footer, and index.html were updated to reference new cache-busted logo/favicon filenames derived from image-9, but the diff shows no new static asset files were added under frontend/public/assets/generated/. Several additional, unrequested footer content changes and metadata/state file updates were also made.",
   "missing_requirements": [
     {
-      "id": "REQ-55",
-      "requirement": "Bootstrap the two specified Internet Identity principals into the platform-admin allowlist during canister initialization and after upgrades (post-upgrade) so they are recognized as Platform Admins.",
-      "reason": "In the provided `backend/main.mo` diff excerpt there is no evidence of initialization logic that inserts the two listed principals into the allowlist, nor any `init`/`postupgrade` hook that re-applies the bootstrap after upgrades.",
+      "id": "REQ-73",
+      "requirement": "Add the uploaded image (image-9.png) under frontend/public/assets/generated/ and add a derived cache-busted transparent header logo PNG at exactly 112px height under the same directory.",
+      "reason": "The diff reports \"Added: 0\" and shows no new files under frontend/public/assets/generated/, so there is no evidence that image-9.png or the derived 112px logo PNG were actually added to the repository.",
       "evidence": [
-        "backend/main.mo"
+        "File diff summary (Added: 0, Modified: 5, Removed: 0)",
+        "frontend/src/components/layout/SiteHeader.tsx (references /assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png, but file not shown as added)",
+        "frontend/src/components/layout/SiteFooter.tsx (references /assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png, but file not shown as added)"
       ]
     },
     {
-      "id": "REQ-56",
-      "requirement": "Persist the platform-admin allowlist (AccessControl state) across canister upgrades so admin access does not get lost after redeployments/upgrades.",
-      "reason": "The diff shows `var accessControlState = AccessControl.initState();` (non-stable) and does not show any stable storage or preupgrade/postupgrade serialization for AccessControl state; thus persistence across upgrades is not evidenced.",
+      "id": "REQ-76",
+      "requirement": "Generate new favicon assets (16x16 PNG, 32x32 PNG, and .ico) under frontend/public/assets/generated/ with cache-busting filenames, and update frontend/index.html to reference them.",
+      "reason": "frontend/index.html was updated to reference cache-busted favicon filenames, but the diff shows no new favicon files were added under frontend/public/assets/generated/ (Added: 0).",
       "evidence": [
-        "backend/main.mo"
+        "frontend/index.html (references /assets/generated/favicon.cb_20260209_01.ico, favicon-32x32.cb_20260209_01.png, favicon-16x16.cb_20260209_01.png)",
+        "File diff summary (Added: 0, Modified: 5, Removed: 0)"
       ]
     },
     {
-      "id": "REQ-57",
-      "requirement": "If REQ-56 requires a state schema change, add a conditional Motoko migration (backend/migration.mo) that preserves existing data and initializes new stable fields without trapping.",
-      "reason": "No new `backend/migration.mo` file was added and no migration logic is shown in the diff summary; therefore there is no evidence of a conditional migration for any new stable fields related to admin allowlist persistence.",
+      "id": "REQ-77",
+      "requirement": "Search the frontend codebase for any remaining references to the previous logo asset path (/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png) and update them so the new logo is used everywhere.",
+      "reason": "The diff shows updates in SiteHeader.tsx and SiteFooter.tsx, but provides no evidence of a repo-wide update or confirmation that no other references remain.",
       "evidence": [
-        "backend/main.mo"
+        "frontend/src/components/layout/SiteHeader.tsx",
+        "frontend/src/components/layout/SiteFooter.tsx",
+        "frontend-file-summaries.txt (does not provide evidence of a completed search/removal of all old references)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Modified `project_state.json` (project metadata/state) unrelated to platform-admin allowlist persistence/bootstrapping requirements.",
-      "reason": "The BuildRequest is specifically about backend allowlist persistence and bootstrapping admin principals; it does not request changes to project metadata/state files.",
+      "description": "Expanded/changed footer content (service areas list, quick links including portal login links, contact details like WhatsApp/Instagram/email, and attribution text).",
+      "reason": "The BuildRequest only asked to update the footer logo asset path; it explicitly lists non-goals such as changing navigation beyond updating logo/favicons.",
+      "evidence": [
+        "frontend/src/components/layout/SiteFooter.tsx"
+      ]
+    },
+    {
+      "description": "Updated frontend-file-summaries.txt content describing various app features.",
+      "reason": "Not requested; BuildRequest focuses on adding static logo/favicon assets and updating references.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "Updated project_state.json (project state/version/summary metadata).",
+      "reason": "Not requested; BuildRequest focuses on static assets and logo/favicon wiring.",
       "evidence": [
         "project_state.json"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.78,
   "changed_files": [
-    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.html",
+    "frontend/src/components/layout/SiteFooter.tsx",
+    "frontend/src/components/layout/SiteHeader.tsx",
     "project_state.json"
   ]
 }

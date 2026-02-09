@@ -1,6 +1,113 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Platform admin allowlist persistence fix (frontend-scope)",
-  "requirements": []
+  "title": "Use uploaded image-9.png as GreenPlantz logo across header, footer, and favicon",
+  "requirements": [
+    {
+      "id": "REQ-73",
+      "summary": "Add image-9.png to generated static assets and create a 112px-tall transparent, header-optimized, cache-busted logo PNG derived from it.",
+      "acceptanceCriteria": [
+        "The repository contains the original uploaded file under frontend/public/assets/generated/ (image-9.png).",
+        "A new derived logo PNG exists under frontend/public/assets/generated/ with a cache-busting filename and 112px height, transparent background preserved where applicable.",
+        "The derived logo PNG renders correctly when loaded directly via /assets/generated/<filename>."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/image-9.png",
+          "operation": "create",
+          "description": "Add the original uploaded image as a static asset (must be exactly named image-9.png) under frontend/public/assets/generated/."
+        },
+        {
+          "path": "frontend/public/assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png",
+          "operation": "create",
+          "description": "Create a header-optimized, transparent PNG derived from frontend/public/assets/generated/image-9.png at exactly 112px height (preserve aspect ratio; no distortion; no extra padding unless needed to avoid clipping)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-74",
+      "summary": "Update the site header logo to use the new cache-busted derived 112px-tall logo asset.",
+      "acceptanceCriteria": [
+        "frontend/src/components/layout/SiteHeader.tsx references the new /assets/generated/<new-logo-file>.png path.",
+        "The header logo remains responsive and does not overflow the header height (header container is h-16), maintaining aspect ratio."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/layout/SiteHeader.tsx",
+          "operation": "modify",
+          "description": "Replace the current logo src (\"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\") with \"/assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png\" and keep responsive sizing within the h-16 header."
+        }
+      ]
+    },
+    {
+      "id": "REQ-75",
+      "summary": "Update the site footer brand logo to use the new cache-busted derived 112px-tall logo asset.",
+      "acceptanceCriteria": [
+        "frontend/src/components/layout/SiteFooter.tsx references the new /assets/generated/<new-logo-file>.png path.",
+        "The footer brand logo displays correctly on mobile and desktop layouts."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/layout/SiteFooter.tsx",
+          "operation": "modify",
+          "description": "Replace the current footer brand logo src (\"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\") with \"/assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png\" while preserving existing responsive layout behavior."
+        }
+      ]
+    },
+    {
+      "id": "REQ-76",
+      "summary": "Generate new cache-busted favicon assets from image-9.png and update index.html to reference them.",
+      "acceptanceCriteria": [
+        "New favicon files exist under frontend/public/assets/generated/ and are referenced in frontend/index.html.",
+        "A hard refresh shows the updated favicon in the browser tab (no broken favicon requests in the network panel)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/favicon-16x16.cb_20260209_01.png",
+          "operation": "create",
+          "description": "Generate a 16x16 PNG favicon derived from frontend/public/assets/generated/image-9.png with a cache-busting filename."
+        },
+        {
+          "path": "frontend/public/assets/generated/favicon-32x32.cb_20260209_01.png",
+          "operation": "create",
+          "description": "Generate a 32x32 PNG favicon derived from frontend/public/assets/generated/image-9.png with a cache-busting filename."
+        },
+        {
+          "path": "frontend/public/assets/generated/favicon.cb_20260209_01.ico",
+          "operation": "create",
+          "description": "Generate an .ico favicon derived from frontend/public/assets/generated/image-9.png with a cache-busting filename."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Update favicon link references to replace /assets/generated/favicon.cb_20260209.ico, /assets/generated/favicon-32x32.cb_20260209.png, and /assets/generated/favicon-16x16.cb_20260209.png with /assets/generated/favicon.cb_20260209_01.ico, /assets/generated/favicon-32x32.cb_20260209_01.png, and /assets/generated/favicon-16x16.cb_20260209_01.png."
+        }
+      ]
+    },
+    {
+      "id": "REQ-77",
+      "summary": "Remove remaining references to the previous GreenPlantz logo asset(s) and update them to the new cache-busted logo so it appears consistently everywhere.",
+      "acceptanceCriteria": [
+        "No references remain to \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" in the frontend source after the change.",
+        "All brand-logo instances in the UI use the new cache-busted asset path(s)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/layout/SiteHeader.tsx",
+          "operation": "modify",
+          "description": "Re-scan for any remaining references to older GreenPlantz logo assets under /assets/generated/ and ensure the header uses only /assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png."
+        },
+        {
+          "path": "frontend/src/components/layout/SiteFooter.tsx",
+          "operation": "modify",
+          "description": "Re-scan for any remaining references to older GreenPlantz logo assets under /assets/generated/ and ensure the footer uses only /assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png."
+        },
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Verify there are no remaining references to older favicon or logo asset filenames under /assets/generated/ (including /assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png) and keep only the new cache-busted favicon references."
+        }
+      ]
+    }
+  ]
 }

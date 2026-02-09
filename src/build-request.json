@@ -1,76 +1,123 @@
 {
   "kind": "build_request",
-  "title": "Fix platform-admin allowlist persistence and bootstrap required admin principals",
-  "priority": "high",
+  "title": "Upload image-9.png and use it as the GreenPlantz logo (header, footer, favicon)",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-55",
-      "text": "Ensure the backend recognizes these Internet Identity principals as Platform Admins by bootstrapping them into the admin allowlist during canister initialization and after upgrades (post-upgrade):\n- b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe\n- 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae",
-      "target": "backend",
+      "id": "REQ-73",
+      "text": "Add the uploaded image (image-9.png) to frontend static assets under frontend/public/assets/generated/, and create a cache-busted, header-optimized transparent PNG logo derived from it at exactly 112px height (preserve aspect ratio; no distortion; no extra padding unless needed to avoid clipping).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-10"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "this is the principle id 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae",
-          "yes do it"
+          "https://drive.google.com/file/d/1iB6Xi1-SgExGrapOP06lvPDzkenURn30/view?usp=drive_link",
+          "upload this photo",
+          "as logo"
         ]
       },
       "acceptanceCriteria": [
-        "After deploying the update, signing in with principal 7sopg-rkdvi-vg7tv-4foks-ejhyr-rotwu-wcdxm-kkij6-zwzel-qownx-aae results in getCallerRole().isPlatformAdmin == true.",
-        "After deploying the update, signing in with principal b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe results in getCallerRole().isPlatformAdmin == true.",
-        "The Team/Admin portal (/portal/team) redirects authenticated platform admins to /admin/nurseries instead of showing the Access Denied screen."
+        "The repository contains the original uploaded file under frontend/public/assets/generated/ (image-9.png).",
+        "A new derived logo PNG exists under frontend/public/assets/generated/ with a cache-busting filename and 112px height, transparent background preserved where applicable.",
+        "The derived logo PNG renders correctly when loaded directly via /assets/generated/<filename>."
       ]
     },
     {
-      "id": "REQ-56",
-      "text": "Persist the platform-admin allowlist (AccessControl state) across canister upgrades so that admin access does not revert or get lost after redeployments/upgrades.",
-      "target": "backend",
+      "id": "REQ-74",
+      "text": "Update the site header logo image to use the newly generated cache-busted logo asset (replace the current src \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" in frontend/src/components/layout/SiteHeader.tsx).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-7"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "still shows the same"
+          "upload this photo",
+          "as logo"
         ]
       },
       "acceptanceCriteria": [
-        "After an upgrade/redeploy, a principal that was already an admin before the upgrade remains an admin (getCallerRole().isPlatformAdmin stays true for that principal).",
-        "Admin allowlist changes performed via existing backend methods (e.g., grantAdminAccess / revokeAccess) remain effective after subsequent upgrades."
+        "frontend/src/components/layout/SiteHeader.tsx references the new /assets/generated/<new-logo-file>.png path.",
+        "The header logo remains responsive and does not overflow the header height (header container is h-16), maintaining aspect ratio."
       ]
     },
     {
-      "id": "REQ-57",
-      "text": "If implementing REQ-56 requires a state schema change (e.g., adding stable state for AccessControl), add a conditional Motoko migration (backend/migration.mo) that safely preserves existing app data and initializes any new stable fields without trapping.",
-      "target": "backend",
+      "id": "REQ-75",
+      "text": "Update the website footer brand logo to use the newly generated cache-busted logo asset (replace the current src \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" in frontend/src/components/layout/SiteFooter.tsx).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "yes do it"
+          "upload this photo",
+          "as logo"
         ]
       },
       "acceptanceCriteria": [
-        "Upgrading from the current deployed canister version to the updated version completes without trapping.",
-        "Existing non-auth state (categories, products, garden centers, user profiles, orders) remains readable and behaves the same after upgrade.",
-        "New stable fields introduced for admin allowlist persistence are initialized correctly when upgrading from older state that did not have them."
+        "frontend/src/components/layout/SiteFooter.tsx references the new /assets/generated/<new-logo-file>.png path.",
+        "The footer brand logo displays correctly on mobile and desktop layouts."
+      ]
+    },
+    {
+      "id": "REQ-76",
+      "text": "Generate new favicon assets derived from the uploaded image-9.png (16x16 PNG, 32x32 PNG, and .ico) with cache-busting filenames under frontend/public/assets/generated/, and update frontend/index.html to reference the new favicon filenames (replacing the current favicon.cb_20260209.ico, favicon-32x32.cb_20260209.png, favicon-16x16.cb_20260209.png).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1",
+          "msg-2"
+        ],
+        "quotes": [
+          "upload this photo",
+          "as logo"
+        ]
+      },
+      "acceptanceCriteria": [
+        "New favicon files exist under frontend/public/assets/generated/ and are referenced in frontend/index.html.",
+        "A hard refresh shows the updated favicon in the browser tab (no broken favicon requests in the network panel)."
+      ]
+    },
+    {
+      "id": "REQ-77",
+      "text": "Search the frontend codebase for any remaining references to the previous logo asset path \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" (and any other older GreenPlantz logo assets under /assets/generated/) and update them to the newly generated cache-busted logo asset so the new logo is used everywhere it appears.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1",
+          "msg-2"
+        ],
+        "quotes": [
+          "as logo"
+        ]
+      },
+      "acceptanceCriteria": [
+        "No references remain to \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" in the frontend source after the change.",
+        "All brand-logo instances in the UI use the new cache-busted asset path(s)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
     "Use English for any user-facing text.",
-    "Do not edit files under frontend immutable paths (as defined by SYSTEM_CONTEXT)."
+    "Do not serve generated images from the backend; keep them as static assets under frontend/public/assets/generated/.",
+    "Do not modify any files under frontend/src/components/ui or other paths listed in frontend.immutablePaths."
   ],
   "nonGoals": [
-    "Adding new roles/permissions beyond fixing platform-admin allowlist behavior.",
-    "Changing Team Portal UI/wording beyond what is necessary to verify and unblock platform-admin access.",
-    "Implementing external authentication providers (only Internet Identity is supported)."
+    "Changing backend logic or data models.",
+    "Adding new pages or changing navigation beyond updating logo/favicons.",
+    "Implementing image uploading by users at runtime (this request is for static asset inclusion)."
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "Original uploaded image (image-9.png)",
+      "Header-optimized transparent logo derived from image-9.png at exactly 112px height (greenplantz-logo-image-9.dim_auto_x112.cb_20260209_XX.png)",
+      "Favicon PNG 16x16 derived from image-9.png (favicon-16x16.cb_20260209_XX.png)",
+      "Favicon PNG 32x32 derived from image-9.png (favicon-32x32.cb_20260209_XX.png)",
+      "Favicon ICO derived from image-9.png (favicon.cb_20260209_XX.ico)"
+    ],
     "edits": []
   }
 }

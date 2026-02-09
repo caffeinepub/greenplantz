@@ -133,6 +133,7 @@ export interface backendInterface {
     addGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
     addProduct(name: string, description: string, categoryId: CategoryId, priceCents: bigint, stock: bigint, gardenCenterId: GardenCenterId, imageUrls: Array<string>): Promise<ProductId>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    bulkUpdateStocks(stockUpdates: Array<[ProductId, GardenCenterId, bigint]>): Promise<void>;
     checkUserRole(userPrincipal: Principal): Promise<UserRole>;
     createGardenCenter(name: string, location: string): Promise<GardenCenterId>;
     getActiveProducts(): Promise<Array<Product>>;
@@ -140,6 +141,8 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCategories(): Promise<Array<Category>>;
+    getCategoryByName(name: string): Promise<Category | null>;
+    getCategoryPath(categoryId: CategoryId): Promise<Array<Category>>;
     getFullCategoryTaxonomy(): Promise<Array<CategoryWithSubcategories>>;
     getProduct(productId: ProductId): Promise<Product>;
     getProductsForCategory(categoryId: CategoryId): Promise<Array<Product>>;
@@ -152,7 +155,9 @@ export interface backendInterface {
     removeGardenCenterMember(gardenCenterId: GardenCenterId, memberPrincipal: Principal): Promise<void>;
     revokeAccess(userPrincipal: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    seedDefaultCategories(): Promise<void>;
     updateGardenCenter(gardenCenterId: GardenCenterId, name: string, location: string): Promise<void>;
+    upsertProductStock(productId: ProductId, gardenCenterId: GardenCenterId, newStock: bigint): Promise<void>;
 }
 import type { Category as _Category, CategoryId as _CategoryId, CategoryWithSubcategories as _CategoryWithSubcategories, GardenCenterId as _GardenCenterId, Product as _Product, ProductId as _ProductId, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -224,6 +229,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n2(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async bulkUpdateStocks(arg0: Array<[ProductId, GardenCenterId, bigint]>): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.bulkUpdateStocks(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.bulkUpdateStocks(arg0);
             return result;
         }
     }
@@ -325,18 +344,46 @@ export class Backend implements backendInterface {
             return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getCategoryByName(arg0: string): Promise<Category | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCategoryByName(arg0);
+                return from_candid_opt_n14(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCategoryByName(arg0);
+            return from_candid_opt_n14(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getCategoryPath(arg0: CategoryId): Promise<Array<Category>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getCategoryPath(arg0);
+                return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getCategoryPath(arg0);
+            return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getFullCategoryTaxonomy(): Promise<Array<CategoryWithSubcategories>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getFullCategoryTaxonomy();
-                return from_candid_vec_n14(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n15(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getFullCategoryTaxonomy();
-            return from_candid_vec_n14(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n15(this._uploadFile, this._downloadFile, result);
         }
     }
     async getProduct(arg0: ProductId): Promise<Product> {
@@ -493,6 +540,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async seedDefaultCategories(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.seedDefaultCategories();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.seedDefaultCategories();
+            return result;
+        }
+    }
     async updateGardenCenter(arg0: GardenCenterId, arg1: string, arg2: string): Promise<void> {
         if (this.processError) {
             try {
@@ -507,9 +568,23 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async upsertProductStock(arg0: ProductId, arg1: GardenCenterId, arg2: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.upsertProductStock(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.upsertProductStock(arg0, arg1, arg2);
+            return result;
+        }
+    }
 }
-function from_candid_CategoryWithSubcategories_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CategoryWithSubcategories): CategoryWithSubcategories {
-    return from_candid_record_n16(_uploadFile, _downloadFile, value);
+function from_candid_CategoryWithSubcategories_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CategoryWithSubcategories): CategoryWithSubcategories {
+    return from_candid_record_n17(_uploadFile, _downloadFile, value);
 }
 function from_candid_Category_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Category): Category {
     return from_candid_record_n13(_uploadFile, _downloadFile, value);
@@ -522,6 +597,9 @@ function from_candid_UserRole_n4(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }
 function from_candid_opt_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Category]): Category | null {
+    return value.length === 0 ? null : from_candid_Category_n12(_uploadFile, _downloadFile, value[0]);
 }
 function from_candid_opt_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_CategoryId]): CategoryId | null {
     return value.length === 0 ? null : value[0];
@@ -544,7 +622,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
         parentCategoryId: record_opt_to_undefined(from_candid_opt_n9(_uploadFile, _downloadFile, value.parentCategoryId))
     };
 }
-function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     category: _Category;
     subcategories: Array<_CategoryWithSubcategories>;
 }): {
@@ -553,7 +631,7 @@ function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         category: from_candid_Category_n12(_uploadFile, _downloadFile, value.category),
-        subcategories: from_candid_vec_n14(_uploadFile, _downloadFile, value.subcategories)
+        subcategories: from_candid_vec_n15(_uploadFile, _downloadFile, value.subcategories)
     };
 }
 function from_candid_record_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -604,8 +682,8 @@ function from_candid_variant_n5(_uploadFile: (file: ExternalBlob) => Promise<Uin
 function from_candid_vec_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Category>): Array<Category> {
     return value.map((x)=>from_candid_Category_n12(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_CategoryWithSubcategories>): Array<CategoryWithSubcategories> {
-    return value.map((x)=>from_candid_CategoryWithSubcategories_n15(_uploadFile, _downloadFile, x));
+function from_candid_vec_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_CategoryWithSubcategories>): Array<CategoryWithSubcategories> {
+    return value.map((x)=>from_candid_CategoryWithSubcategories_n16(_uploadFile, _downloadFile, x));
 }
 function from_candid_vec_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Product>): Array<Product> {
     return value.map((x)=>from_candid_Product_n7(_uploadFile, _downloadFile, x));

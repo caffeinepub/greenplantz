@@ -61,9 +61,9 @@ export default function SiteHeader() {
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <img 
-            src="/assets/generated/greenplantz-header-logo-from-upload.dim_AUTOx112.cb_20260208_04.png"
+            src="/assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png"
             alt="GreenPlantz" 
-            className="h-10 w-auto max-h-12 object-contain sm:h-12 md:h-14"
+            className="h-10 w-auto max-h-14 object-contain sm:h-12 md:h-14"
           />
         </Link>
 

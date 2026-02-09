@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Search, ChevronDown, Filter } from 'lucide-react';
+import { Search, ChevronDown, Filter, AlertCircle } from 'lucide-react';
 import ProductCard from '../components/store/ProductCard';
 import { useGetFullCategoryTaxonomy } from '../hooks/storefront/useFullCategoryTaxonomy';
 import { useGetActiveProducts, useSearchProducts } from '../hooks/storefront/useProducts';
@@ -36,7 +36,8 @@ export default function CatalogPage() {
     
     if (!products) return [];
     
-    if (selectedCategories.size > 0 && taxonomy) {
+    // Only apply category filtering if taxonomy is available and categories are selected
+    if (selectedCategories.size > 0 && taxonomy && taxonomy.length > 0) {
       const allCategoryIds = new Set<string>();
       
       for (const categoryIdStr of selectedCategories) {
@@ -76,7 +77,7 @@ export default function CatalogPage() {
 
   // Group categories by parent for hierarchical display
   const categoryGroups = useMemo(() => {
-    if (!taxonomy) return [];
+    if (!taxonomy || taxonomy.length === 0) return [];
     
     return taxonomy.map((rootNode) => ({
       parent: rootNode.category,
@@ -142,6 +143,13 @@ export default function CatalogPage() {
                     {[1, 2, 3].map((i) => (
                       <Skeleton key={i} className="h-10 w-full" />
                     ))}
+                  </div>
+                ) : !taxonomy || taxonomy.length === 0 ? (
+                  <div className="flex items-start gap-2 p-3 border rounded-md bg-muted/50">
+                    <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-muted-foreground">
+                      Categories are not available right now.
+                    </p>
                   </div>
                 ) : (
                   categoryGroups.map((group) => (

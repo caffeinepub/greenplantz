@@ -10,7 +10,13 @@ export default function SiteFooter() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand */}
           <div>
-            <h3 className="font-bold text-lg mb-2 text-primary">GreenPlantz</h3>
+            <div className="mb-3">
+              <img 
+                src="/assets/generated/greenplantz-logo-image-9.dim_auto_x112.cb_20260209_01.png"
+                alt="GreenPlantz" 
+                className="h-12 w-auto object-contain"
+              />
+            </div>
             <p className="text-sm text-muted-foreground mb-3">
               Your trusted source for quality plants and garden supplies.
             </p>

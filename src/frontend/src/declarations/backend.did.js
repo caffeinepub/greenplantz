@@ -70,6 +70,11 @@ export const idlService = IDL.Service({
       [],
     ),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'bulkUpdateStocks' : IDL.Func(
+      [IDL.Vec(IDL.Tuple(ProductId, GardenCenterId, IDL.Nat))],
+      [],
+      [],
+    ),
   'checkUserRole' : IDL.Func([IDL.Principal], [UserRole], ['query']),
   'createGardenCenter' : IDL.Func([IDL.Text, IDL.Text], [GardenCenterId], []),
   'getActiveProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
@@ -77,6 +82,8 @@ export const idlService = IDL.Service({
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
+  'getCategoryByName' : IDL.Func([IDL.Text], [IDL.Opt(Category)], ['query']),
+  'getCategoryPath' : IDL.Func([CategoryId], [IDL.Vec(Category)], ['query']),
   'getFullCategoryTaxonomy' : IDL.Func(
       [],
       [IDL.Vec(CategoryWithSubcategories)],
@@ -105,7 +112,9 @@ export const idlService = IDL.Service({
     ),
   'revokeAccess' : IDL.Func([IDL.Principal], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'seedDefaultCategories' : IDL.Func([], [], []),
   'updateGardenCenter' : IDL.Func([GardenCenterId, IDL.Text, IDL.Text], [], []),
+  'upsertProductStock' : IDL.Func([ProductId, GardenCenterId, IDL.Nat], [], []),
 });
 
 export const idlInitArgs = [];
@@ -173,6 +182,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'bulkUpdateStocks' : IDL.Func(
+        [IDL.Vec(IDL.Tuple(ProductId, GardenCenterId, IDL.Nat))],
+        [],
+        [],
+      ),
     'checkUserRole' : IDL.Func([IDL.Principal], [UserRole], ['query']),
     'createGardenCenter' : IDL.Func([IDL.Text, IDL.Text], [GardenCenterId], []),
     'getActiveProducts' : IDL.Func([], [IDL.Vec(Product)], ['query']),
@@ -180,6 +194,8 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
+    'getCategoryByName' : IDL.Func([IDL.Text], [IDL.Opt(Category)], ['query']),
+    'getCategoryPath' : IDL.Func([CategoryId], [IDL.Vec(Category)], ['query']),
     'getFullCategoryTaxonomy' : IDL.Func(
         [],
         [IDL.Vec(CategoryWithSubcategories)],
@@ -208,8 +224,14 @@ export const idlFactory = ({ IDL }) => {
       ),
     'revokeAccess' : IDL.Func([IDL.Principal], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'seedDefaultCategories' : IDL.Func([], [], []),
     'updateGardenCenter' : IDL.Func(
         [GardenCenterId, IDL.Text, IDL.Text],
+        [],
+        [],
+      ),
+    'upsertProductStock' : IDL.Func(
+        [ProductId, GardenCenterId, IDL.Nat],
         [],
         [],
       ),

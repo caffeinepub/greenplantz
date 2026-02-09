@@ -1,11 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Fix Platform Admin access so specified principals are recognized as admins, and ensure the platform-admin allowlist persists across canister upgrades.
+**Goal:** Replace the GreenPlantz brand logo across the site (header, footer, favicon) with the uploaded `image-9.png`, using cache-busted static assets.
 
 **Planned changes:**
-- Bootstrap the specified Internet Identity principals into the platform-admin allowlist during canister initialization and after upgrades (post-upgrade).
-- Persist AccessControl / platform-admin allowlist state across upgrades so existing admin grants/revocations are not lost.
-- Add a safe, conditional Motoko migration (if required by the persistence change) to preserve existing app data and initialize any new stable fields without trapping.
+- Add the original uploaded `image-9.png` to `frontend/public/assets/generated/`.
+- Create a cache-busted, header-optimized transparent PNG logo derived from `image-9.png` at exactly 112px height (preserve aspect ratio; avoid distortion; avoid extra padding unless needed to prevent clipping).
+- Update `frontend/src/components/layout/SiteHeader.tsx` and `frontend/src/components/layout/SiteFooter.tsx` to use the new derived logo asset path.
+- Generate new cache-busted favicon assets (16x16 PNG, 32x32 PNG, and `.ico`) derived from `image-9.png` under `frontend/public/assets/generated/`, and update `frontend/index.html` to reference them.
+- Search the frontend for remaining references to the previous logo asset(s) under `/assets/generated/` and update them to the new cache-busted logo so the new logo is used everywhere.
 
-**User-visible outcome:** The specified principals can access the Team/Admin portal as Platform Admins (redirecting to `/admin/nurseries` instead of showing Access Denied), and admin access remains intact after redeployments/upgrades.
+**User-visible outcome:** The new uploaded logo appears in the site header and footer, and the browser tab favicon updates to match it after a hard refresh.

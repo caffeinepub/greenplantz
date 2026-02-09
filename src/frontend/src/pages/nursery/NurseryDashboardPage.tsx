@@ -15,7 +15,7 @@ import { useGetFullCategoryTaxonomy } from '../../hooks/storefront/useFullCatego
 import { getLeafCategories, flattenTaxonomy } from '../../utils/categoryTaxonomy';
 import RequireGardenCenterMember from '../../components/auth/RequireGardenCenterMember';
 import { toast } from 'sonner';
-import { Building2, Package, Plus, X, Image as ImageIcon } from 'lucide-react';
+import { Building2, Package, Plus, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
 
 function NurseryDashboardContent() {
   const { data: gardenCenter, isLoading: gcLoading } = useMyGardenCenter();
@@ -101,7 +101,8 @@ function NurseryDashboardContent() {
   const handleAddProduct = () => {
     if (!gardenCenter) return;
 
-    if (!productName || !productDescription || !productCategoryId || !productPrice || !productStock) {
+    // Category is now optional - only validate required fields
+    if (!productName || !productDescription || !productPrice || !productStock) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -109,11 +110,14 @@ function NurseryDashboardContent() {
     const priceCents = Math.round(parseFloat(productPrice) * 100);
     const stockNum = parseInt(productStock);
 
+    // Use categoryId 0 (Uncategorized) if no category is selected
+    const categoryId = productCategoryId ? BigInt(productCategoryId) : BigInt(0);
+
     addProduct(
       {
         name: productName,
         description: productDescription,
-        categoryId: BigInt(productCategoryId),
+        categoryId,
         priceCents: BigInt(priceCents),
         stock: BigInt(stockNum),
         gardenCenterId: gardenCenter.id,
@@ -284,13 +288,20 @@ function NurseryDashboardContent() {
                     </div>
 
                     <div>
-                      <Label htmlFor="productCategory">Category *</Label>
+                      <Label htmlFor="productCategory">Category (Optional)</Label>
                       {taxonomyLoading ? (
                         <Skeleton className="h-10 w-full" />
+                      ) : !taxonomy || taxonomy.length === 0 ? (
+                        <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
+                          <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <p className="text-sm text-muted-foreground">
+                            Categories are not available right now. Your product will be added as Uncategorized.
+                          </p>
+                        </div>
                       ) : (
                         <Select value={productCategoryId} onValueChange={setProductCategoryId}>
                           <SelectTrigger id="productCategory">
-                            <SelectValue placeholder="Select a category" />
+                            <SelectValue placeholder="Select a category (optional)" />
                           </SelectTrigger>
                           <SelectContent>
                             {categoryGroups.map((group) => (
@@ -439,25 +450,34 @@ function NurseryDashboardContent() {
                           </div>
                         )}
                       </div>
+
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{product.name}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <h3 className="font-semibold mb-1">{product.name}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                           {product.description}
                         </p>
-                        <div className="flex items-center gap-4 mt-2 text-sm">
-                          <span className="font-medium">₹{(Number(product.priceCents) / 100).toFixed(2)}</span>
-                          <span className="text-muted-foreground">Stock: {product.stock.toString()}</span>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                          <span>
+                            <span className="text-muted-foreground">Price:</span> ₹
+                            {(Number(product.priceCents) / 100).toFixed(2)}
+                          </span>
+                          <span>
+                            <span className="text-muted-foreground">Stock:</span> {product.stock.toString()}
+                          </span>
                         </div>
                       </div>
+
                       <div className="flex items-center gap-2">
-                        <Label htmlFor={`active-${product.id}`} className="text-sm">
-                          {product.active ? 'Active' : 'Inactive'}
-                        </Label>
-                        <Switch
-                          id={`active-${product.id}`}
-                          checked={product.active}
-                          onCheckedChange={() => handleToggleActive(product.id, product.active)}
-                        />
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor={`active-${product.id}`} className="text-sm">
+                            {product.active ? 'Active' : 'Inactive'}
+                          </Label>
+                          <Switch
+                            id={`active-${product.id}`}
+                            checked={product.active}
+                            onCheckedChange={() => handleToggleActive(product.id, product.active)}
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}

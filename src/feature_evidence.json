@@ -1,4 +1,100 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-add-the-uploaded-image-image-9-png-to-frontend-static-assets-under-frontend-public-assets-generated-and-create-a-cache-busted-header-optimized-transparent-png-logo-derived-from-it-at-exactly-112px-height-preserve-aspect-ratio-no-distortion-no-extra-padding-unless-needed-to-avoid-clipping",
+      "featureTitle": "Add the uploaded image (image-9.png) to frontend static assets under frontend/public/assets/generated/, and create a cache-busted, header-optimized transparent PNG logo derived from it at exactly 112px height (preserve aspect ratio; no distortion; no extra padding unless needed to avoid clipping).",
+      "files": [],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-73"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-site-header-logo-image-to-use-the-newly-generated-cache-busted-logo-asset-replace-the-current-src-assets-generated-greenplantz-logo-untitled-design-dim-112x112-cb-20260209-png-in-frontend-src-components-layout-siteheader-tsx",
+      "featureTitle": "Update the site header logo image to use the newly generated cache-busted logo asset (replace the current src \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" in frontend/src/components/layout/SiteHeader.tsx).",
+      "files": [
+        "frontend/src/components/layout/SiteHeader.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-74"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-website-footer-brand-logo-to-use-the-newly-generated-cache-busted-logo-asset-replace-the-current-src-assets-generated-greenplantz-logo-untitled-design-dim-112x112-cb-20260209-png-in-frontend-src-components-layout-sitefooter-tsx",
+      "featureTitle": "Update the website footer brand logo to use the newly generated cache-busted logo asset (replace the current src \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" in frontend/src/components/layout/SiteFooter.tsx).",
+      "files": [
+        "frontend/src/components/layout/SiteFooter.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-75"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-generate-new-favicon-assets-derived-from-the-uploaded-image-9-png-16x16-png-32x32-png-and-ico-with-cache-busting-filenames-under-frontend-public-assets-generated-and-update-frontend-index-html-to-reference-the-new-favicon-filenames-replacing-the-current-favicon-cb-20260209-ico-favicon-32x32-cb-20260209-png-favicon-16x16-cb-20260209-png",
+      "featureTitle": "Generate new favicon assets derived from the uploaded image-9.png (16x16 PNG, 32x32 PNG, and .ico) with cache-busting filenames under frontend/public/assets/generated/, and update frontend/index.html to reference the new favicon filenames (replacing the current favicon.cb_20260209.ico, favicon-32x32.cb_20260209.png, favicon-16x16.cb_20260209.png).",
+      "files": [
+        "frontend/index.html"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-76"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-search-the-frontend-codebase-for-any-remaining-references-to-the-previous-logo-asset-path-assets-generated-greenplantz-logo-untitled-design-dim-112x112-cb-20260209-png-and-any-other-older-greenplantz-logo-assets-under-assets-generated-and-update-them-to-the-newly-generated-cache-busted-logo-asset-so-the-new-logo-is-used-everywhere-it-appears",
+      "featureTitle": "Search the frontend codebase for any remaining references to the previous logo asset path \"/assets/generated/greenplantz-logo-untitled-design.dim_112x112.cb_20260209.png\" (and any other older GreenPlantz logo assets under /assets/generated/) and update them to the newly generated cache-busted logo asset so the new logo is used everywhere it appears.",
+      "files": [
+        "frontend/index.html",
+        "frontend/src/components/layout/SiteFooter.tsx",
+        "frontend/src/components/layout/SiteHeader.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-77"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

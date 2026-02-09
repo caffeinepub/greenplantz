@@ -53,6 +53,10 @@ export interface _SERVICE {
     ProductId
   >,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'bulkUpdateStocks' : ActorMethod<
+    [Array<[ProductId, GardenCenterId, bigint]>],
+    undefined
+  >,
   'checkUserRole' : ActorMethod<[Principal], UserRole>,
   'createGardenCenter' : ActorMethod<[string, string], GardenCenterId>,
   'getActiveProducts' : ActorMethod<[], Array<Product>>,
@@ -60,6 +64,8 @@ export interface _SERVICE {
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCategories' : ActorMethod<[], Array<Category>>,
+  'getCategoryByName' : ActorMethod<[string], [] | [Category]>,
+  'getCategoryPath' : ActorMethod<[CategoryId], Array<Category>>,
   'getFullCategoryTaxonomy' : ActorMethod<[], Array<CategoryWithSubcategories>>,
   'getProduct' : ActorMethod<[ProductId], Product>,
   'getProductsForCategory' : ActorMethod<[CategoryId], Array<Product>>,
@@ -75,8 +81,13 @@ export interface _SERVICE {
   >,
   'revokeAccess' : ActorMethod<[Principal], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'seedDefaultCategories' : ActorMethod<[], undefined>,
   'updateGardenCenter' : ActorMethod<
     [GardenCenterId, string, string],
+    undefined
+  >,
+  'upsertProductStock' : ActorMethod<
+    [ProductId, GardenCenterId, bigint],
     undefined
   >,
 }
