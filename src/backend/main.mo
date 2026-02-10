@@ -6,11 +6,12 @@ import Char "mo:core/Char";
 import Time "mo:core/Time";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
+import Iter "mo:core/Iter";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   public type CategoryId = Nat;
   public type ProductId = Nat;
@@ -53,6 +54,8 @@ actor {
     active : Bool;
     gardenCenterId : GardenCenterId;
     imageUrls : [Text];
+    sku : Text;
+    verified : Bool;
   };
 
   public type OrderItem = {
@@ -111,8 +114,6 @@ actor {
   let orders = Map.empty<Principal, Map.Map<OrderId, Order>>();
   var accessControlState = AccessControl.initState();
 
-  include MixinAuthorization(accessControlState);
-
   func bootstrapAdmins() {
     let adminPrincipals = [
       "b6cav-3sd7q-navb4-zf3yt-52cnf-gzonh-zab4f-rnkfa-fg42t-64thx-7qe",
@@ -130,6 +131,7 @@ actor {
   //-------------------------------------
   // Folder Listing (Mock Implementation)
   //-------------------------------------
+
   public shared ({ caller }) func getParsedFolderListing() : async FolderListing {
     assertPlatformAdmin(caller);
 
@@ -170,6 +172,7 @@ actor {
   //-------------------------------------
   // Core Garden Center Functionality
   //-------------------------------------
+
   func containsSearchTerm(haystack : Text, needle : Text) : Bool {
     let haystackChars = haystack.toArray();
     let needleChars = needle.toArray();
@@ -468,6 +471,40 @@ actor {
     };
   };
 
+  public query ({ caller }) func getGardenCenterById(gardenCenterId : GardenCenterId) : async GardenCenter {
+    // Require authenticated user access
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can view garden center details");
+    };
+
+    switch (gardenCenters.get(gardenCenterId)) {
+      case (null) { Runtime.trap("Garden Center not found") };
+      case (?gardenCenter) {
+        let teamMembersArray = gardenCenter.teamMembers.toArray();
+
+        // Verify caller is a member of this garden center
+        switch (teamMembersArray.find(func(member) { member.principal == caller and member.enabled })) {
+          case (null) {
+            Runtime.trap("Access denied: You are not a member of this garden center");
+          };
+          case (?_) {
+            if (not gardenCenter.enabled) {
+              Runtime.trap("Garden Center is currently disabled");
+            };
+            return {
+              id = gardenCenter.id;
+              name = gardenCenter.name;
+              location = gardenCenter.location;
+              teamMembers = teamMembersArray;
+              enabled = gardenCenter.enabled;
+              createdAt = gardenCenter.createdAt;
+            };
+          };
+        };
+      };
+    };
+  };
+
   public shared ({ caller }) func addCategory(name : Text, description : Text, parentCategoryId : ?CategoryId) : async CategoryId {
     assertPlatformAdmin(caller);
 
@@ -503,18 +540,31 @@ actor {
     imageUrls : [Text],
   ) : async ProductId {
     assertGardenCenterMember(gardenCenterId, caller);
-    switch (categories.get(categoryId)) {
-      case (null) { Runtime.trap("Category not found") };
-      case (_) {};
+
+    // Ensure default categories exist before validation
+    ensureDefaultCategoriesExist();
+
+    // Validate categoryId if not 0 (Uncategorized)
+    if (categoryId != 0) {
+      switch (categories.get(categoryId)) {
+        case (null) { Runtime.trap("Category not found") };
+        case (_) {};
+      };
     };
 
-    let parentCategoryId = switch (categories.get(categoryId)) {
-      case (null) { null };
-      case (?category) { category.parentCategoryId };
+    let parentCategoryId : ?CategoryId = if (categoryId != 0) {
+      switch (categories.get(categoryId)) {
+        case (null) { null };
+        case (?category) { category.parentCategoryId };
+      };
+    } else {
+      null;
     };
 
     let productId = products.size();
-    let newProduct = {
+    let newSku = generateSku(name, gardenCenterId, productId);
+
+    let newProduct : Product = {
       id = productId;
       name;
       description;
@@ -525,10 +575,58 @@ actor {
       active = true;
       gardenCenterId;
       imageUrls;
+      sku = newSku;
+      verified = false; // Default to not verified (GreenPlantz verification required)
     };
 
     products.add(productId, newProduct);
     productId;
+  };
+
+  func generateSku(name : Text, gardenCenterId : GardenCenterId, productId : ProductId) : Text {
+    // Take first 3 characters of name and convert to lowercase
+    let nameFragment = convertToLower(
+      Text.fromIter(name.chars().take(3))
+    );
+    let gcFragment = if (gardenCenterId < 1000) { gardenCenterId.toText() } else {
+      (gardenCenterId % 1000).toText();
+    };
+    let productFragment = if (productId < 10000) { productId.toText() } else {
+      (productId % 10000).toText();
+    };
+
+    nameFragment.concat(gcFragment).concat(productFragment);
+  };
+
+  public shared ({ caller }) func verifyProduct(productId : ProductId, verified : Bool) : async () {
+    assertPlatformAdmin(caller);
+    switch (products.get(productId)) {
+      case (null) { Runtime.trap("Product not found") };
+      case (?product) {
+        let updatedProduct = { product with verified };
+        products.add(productId, updatedProduct);
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateProductStock(productId : ProductId, newStock : Nat) : async () {
+    switch (products.get(productId)) {
+      case (null) { Runtime.trap("Product not found") };
+      case (?product) {
+        // Authorization: Must be garden center member or platform admin
+        if (not isPlatformAdmin(caller) and not isGardenCenterMember(product.gardenCenterId, caller)) {
+          Runtime.trap("Unauthorized: Can only update stock for products from your own garden center");
+        };
+
+        // Verification check: Product must be verified before stock updates
+        if (not product.verified) {
+          Runtime.trap("Stock update failed: Product must be verified by GreenPlantz team before updating stock quantity.");
+        };
+
+        let updatedProduct = { product with stock = newStock };
+        products.add(productId, updatedProduct);
+      };
+    };
   };
 
   public shared ({ caller }) func initializeSeedData() : async () {
@@ -650,6 +748,8 @@ actor {
       active = true;
       gardenCenterId = 0;
       imageUrls = [];
+      sku = "DEF000";
+      verified = false;
     };
     products.add(0, defaultProduct);
   };
@@ -738,4 +838,6 @@ actor {
       localNextCategoryId += 1;
     };
   };
+
+  include MixinAuthorization(accessControlState);
 };

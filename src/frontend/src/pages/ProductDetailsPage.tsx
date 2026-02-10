@@ -8,6 +8,7 @@ import { useGetProduct } from '../hooks/storefront/useProduct';
 import { useCart } from '../store/cart/useCart';
 import { ArrowLeft, ShoppingCart, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatINR } from '../utils/money';
 
 export default function ProductDetailsPage() {
   const { productId } = useParams({ from: '/product/$productId' });
@@ -147,7 +148,7 @@ export default function ProductDetailsPage() {
             <div>
               <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
               <p className="text-xl font-semibold text-primary">
-                ${(Number(product.priceCents) / 100).toFixed(2)}
+                {formatINR(product.priceCents)}
               </p>
             </div>
 

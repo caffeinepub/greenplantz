@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Separator } from '@/components/ui/separator';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../store/cart/useCart';
+import { formatINR } from '../utils/money';
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ export default function CartPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold mb-1 truncate">{item.name}</h3>
                       <p className="text-sm text-muted-foreground mb-3">
-                        ${(item.priceCents / 100).toFixed(2)} each
+                        {formatINR(item.priceCents)} each
                       </p>
                       <div className="flex items-center gap-2">
                         <Button
@@ -76,7 +77,7 @@ export default function CartPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">
-                        ${((item.priceCents * item.quantity) / 100).toFixed(2)}
+                        {formatINR(item.priceCents * item.quantity)}
                       </p>
                     </div>
                   </div>
@@ -98,12 +99,12 @@ export default function CartPage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">${(totalPrice / 100).toFixed(2)}</span>
+                  <span className="font-medium">{formatINR(totalPrice)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span className="text-primary">${(totalPrice / 100).toFixed(2)}</span>
+                  <span className="text-primary">{formatINR(totalPrice)}</span>
                 </div>
               </CardContent>
               <CardFooter>

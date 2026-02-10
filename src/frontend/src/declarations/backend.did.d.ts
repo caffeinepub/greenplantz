@@ -34,10 +34,20 @@ export interface FolderListing {
   'frontendDirectories' : Array<string>,
   'deploymentDirectories' : Array<string>,
 }
+export interface GardenCenter {
+  'id' : bigint,
+  'name' : string,
+  'createdAt' : bigint,
+  'teamMembers' : Array<TeamMember>,
+  'enabled' : boolean,
+  'location' : string,
+}
 export type GardenCenterId = bigint;
 export interface Product {
   'id' : ProductId,
+  'sku' : string,
   'categoryId' : CategoryId,
+  'verified' : boolean,
   'active' : boolean,
   'imageUrls' : Array<string>,
   'name' : string,
@@ -48,6 +58,7 @@ export interface Product {
   'priceCents' : bigint,
 }
 export type ProductId = bigint;
+export interface TeamMember { 'principal' : Principal, 'enabled' : boolean }
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
@@ -75,6 +86,7 @@ export interface _SERVICE {
   'getCategoryByName' : ActorMethod<[string], [] | [Category]>,
   'getCategoryPath' : ActorMethod<[CategoryId], Array<Category>>,
   'getFullCategoryTaxonomy' : ActorMethod<[], Array<CategoryWithSubcategories>>,
+  'getGardenCenterById' : ActorMethod<[GardenCenterId], GardenCenter>,
   'getParsedFolderListing' : ActorMethod<[], FolderListing>,
   'getProduct' : ActorMethod<[ProductId], Product>,
   'getProductsForCategory' : ActorMethod<[CategoryId], Array<Product>>,
@@ -95,10 +107,12 @@ export interface _SERVICE {
     [GardenCenterId, string, string],
     undefined
   >,
+  'updateProductStock' : ActorMethod<[ProductId, bigint], undefined>,
   'upsertProductStock' : ActorMethod<
     [ProductId, GardenCenterId, bigint],
     undefined
   >,
+  'verifyProduct' : ActorMethod<[ProductId, boolean], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

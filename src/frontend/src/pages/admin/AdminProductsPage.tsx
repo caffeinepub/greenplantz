@@ -6,15 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useGetCategories } from '../../hooks/storefront/useCategories';
-import { useAddProduct, useToggleProductActive, useInitializeSeedData } from '../../hooks/admin/useAdminProducts';
+import { useAddProduct, useToggleProductActive, useInitializeSeedData, useVerifyProduct } from '../../hooks/admin/useAdminProducts';
 import { useGetActiveProducts } from '../../hooks/storefront/useProducts';
 import { toast } from 'sonner';
 import RequirePlatformAdmin from '../../components/auth/RequirePlatformAdmin';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@tanstack/react-router';
-import { Building2 } from 'lucide-react';
+import { Building2, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { formatINR } from '../../utils/money';
 
 function AdminProductsContent() {
   const [name, setName] = useState('');
@@ -28,6 +30,7 @@ function AdminProductsContent() {
   const { mutate: addProduct, isPending: isAdding } = useAddProduct();
   const { mutate: toggleActive } = useToggleProductActive();
   const { mutate: initializeSeed, isPending: isInitializing } = useInitializeSeedData();
+  const { mutate: verifyProduct, isPending: isVerifying } = useVerifyProduct();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +74,10 @@ function AdminProductsContent() {
         },
       }
     );
+  };
+
+  const handleVerifyProduct = (productId: bigint, verified: boolean) => {
+    verifyProduct({ productId, verified });
   };
 
   return (
@@ -149,7 +156,7 @@ function AdminProductsContent() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="price">Price ($)</Label>
+                    <Label htmlFor="price">Price (₹)</Label>
                     <Input
                       id="price"
                       type="number"
@@ -193,10 +200,23 @@ function AdminProductsContent() {
               ) : products && products.length > 0 ? (
                 <div className="space-y-4 max-h-[600px] overflow-y-auto">
                   {products.map((product) => (
-                    <div key={product.id.toString()} className="border rounded-lg p-4">
+                    <div key={product.id.toString()} className="border rounded-lg p-4 space-y-3">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
-                          <h4 className="font-semibold">{product.name}</h4>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold">{product.name}</h4>
+                            {product.verified ? (
+                              <Badge variant="default" className="gap-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Verified
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="gap-1">
+                                <Clock className="h-3 w-3" />
+                                Unverified
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground line-clamp-2">
                             {product.description}
                           </p>
@@ -212,9 +232,57 @@ function AdminProductsContent() {
                           />
                         </div>
                       </div>
-                      <div className="flex gap-4 text-sm text-muted-foreground">
-                        <span>${(Number(product.priceCents) / 100).toFixed(2)}</span>
+                      
+                      <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                        <span className="font-mono">SKU: {product.sku}</span>
+                        <span>{formatINR(product.priceCents)}</span>
                         <span>Stock: {product.stock.toString()}</span>
+                      </div>
+
+                      <Separator />
+
+                      {/* Verification Controls */}
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="flex items-center gap-2">
+                          <Label className="text-sm font-medium">Verification Status:</Label>
+                          <span className="text-sm">
+                            {product.verified ? (
+                              <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
+                                <CheckCircle2 className="h-4 w-4" />
+                                Verified
+                              </span>
+                            ) : (
+                              <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                Not Verified
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          {!product.verified ? (
+                            <Button
+                              size="sm"
+                              onClick={() => handleVerifyProduct(product.id, true)}
+                              disabled={isVerifying}
+                              className="gap-1"
+                            >
+                              <CheckCircle2 className="h-3 w-3" />
+                              Verify
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleVerifyProduct(product.id, false)}
+                              disabled={isVerifying}
+                              className="gap-1"
+                            >
+                              <XCircle className="h-3 w-3" />
+                              Unverify
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

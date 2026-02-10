@@ -1,4 +1,56 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-update-all-currency-display-and-formatting-across-the-storefront-and-portals-so-every-monetary-amount-is-shown-in-indian-rupees-inr-using-the-symbol-not-including-product-cards-product-details-cart-checkout-customer-order-history-and-admin-nursery-management-views-that-display-prices",
+      "featureTitle": "Update all currency display and formatting across the storefront and portals so every monetary amount is shown in Indian Rupees (INR) using the ₹ symbol (not $), including product cards, product details, cart, checkout, customer order history, and admin/nursery management views that display prices.",
+      "files": [
+        "frontend/src/components/store/ProductCard.tsx",
+        "frontend/src/pages/CartPage.tsx",
+        "frontend/src/pages/CheckoutPage.tsx",
+        "frontend/src/pages/MyOrdersPage.tsx",
+        "frontend/src/pages/ProductDetailsPage.tsx",
+        "frontend/src/pages/admin/AdminProductsPage.tsx",
+        "frontend/src/pages/nursery/NurseryDashboardPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-112"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-centralize-money-formatting-into-a-shared-frontend-utility-e-g-a-helper-that-formats-a-cents-paise-integer-as-inr-using-an-english-locale-and-refactor-existing-ui-code-to-use-it-instead-of-manual-string-interpolation-like-tofixed-2",
+      "featureTitle": "Centralize money formatting into a shared frontend utility (e.g., a helper that formats a cents/paise integer as INR using an English locale) and refactor existing UI code to use it instead of manual string interpolation like \"${...toFixed(2)}\".",
+      "files": [
+        "frontend/src/components/store/ProductCard.tsx",
+        "frontend/src/pages/CartPage.tsx",
+        "frontend/src/pages/CheckoutPage.tsx",
+        "frontend/src/pages/MyOrdersPage.tsx",
+        "frontend/src/pages/ProductDetailsPage.tsx",
+        "frontend/src/pages/admin/AdminProductsPage.tsx",
+        "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
+        "frontend/src/utils/money.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-113"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

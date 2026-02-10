@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import type { Product, ProductId, CategoryId, GardenCenterId } from '../../backend';
 import { toast } from 'sonner';
+import { normalizeErrorMessage } from '../../utils/errorMessage';
 
 export function useGardenCenterProducts(gardenCenterId: GardenCenterId | undefined) {
   const { actor, isFetching: actorFetching } = useActor();
@@ -36,15 +37,22 @@ export function useAddGardenCenterProduct() {
   return useMutation<ProductId, Error, AddProductParams>({
     mutationFn: async (params: AddProductParams) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.addProduct(
-        params.name,
-        params.description,
-        params.categoryId,
-        params.priceCents,
-        params.stock,
-        params.gardenCenterId,
-        params.imageUrls
-      );
+      
+      try {
+        return await actor.addProduct(
+          params.name,
+          params.description,
+          params.categoryId,
+          params.priceCents,
+          params.stock,
+          params.gardenCenterId,
+          params.imageUrls
+        );
+      } catch (error) {
+        // Extract and preserve backend error message
+        const errorMessage = normalizeErrorMessage(error);
+        throw new Error(errorMessage);
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['gardenCenterProducts', variables.gardenCenterId.toString()] });
@@ -52,7 +60,41 @@ export function useAddGardenCenterProduct() {
       toast.success('Product added successfully');
     },
     onError: (error) => {
-      toast.error(`Failed to add product: ${error.message}`);
+      // Display the full error message including backend details
+      const errorMessage = normalizeErrorMessage(error);
+      toast.error(`Failed to add product: ${errorMessage}`);
+    },
+  });
+}
+
+interface UpdateProductStockParams {
+  productId: ProductId;
+  newStock: bigint;
+}
+
+export function useUpdateProductStock() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, UpdateProductStockParams>({
+    mutationFn: async (params: UpdateProductStockParams) => {
+      if (!actor) throw new Error('Actor not available');
+      
+      try {
+        return await actor.updateProductStock(params.productId, params.newStock);
+      } catch (error) {
+        const errorMessage = normalizeErrorMessage(error);
+        throw new Error(errorMessage);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gardenCenterProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Stock updated successfully');
+    },
+    onError: (error) => {
+      const errorMessage = normalizeErrorMessage(error);
+      toast.error(`Failed to update stock: ${errorMessage}`);
     },
   });
 }
@@ -83,7 +125,8 @@ export function useUpdateGardenCenterProduct() {
       toast.success('Product updated successfully');
     },
     onError: (error) => {
-      toast.error(`Failed to update product: ${error.message}`);
+      const errorMessage = normalizeErrorMessage(error);
+      toast.error(`Failed to update product: ${errorMessage}`);
     },
   });
 }
@@ -108,7 +151,8 @@ export function useToggleGardenCenterProductActive() {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
     onError: (error) => {
-      toast.error(`Failed to toggle product: ${error.message}`);
+      const errorMessage = normalizeErrorMessage(error);
+      toast.error(`Failed to toggle product: ${errorMessage}`);
     },
   });
 }

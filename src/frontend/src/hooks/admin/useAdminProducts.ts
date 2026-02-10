@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from '../useActor';
 import type { ProductId, CategoryId, GardenCenterId } from '../../backend';
 import { toast } from 'sonner';
+import { normalizeErrorMessage } from '../../utils/errorMessage';
 
 interface AddProductParams {
   name: string;
@@ -15,6 +16,11 @@ interface AddProductParams {
 interface ToggleProductActiveParams {
   productId: ProductId;
   active: boolean;
+}
+
+interface VerifyProductParams {
+  productId: ProductId;
+  verified: boolean;
 }
 
 export function useAddProduct() {
@@ -58,6 +64,33 @@ export function useToggleProductActive() {
     },
     onError: (error) => {
       toast.error(`Failed to toggle product: ${error.message}`);
+    },
+  });
+}
+
+export function useVerifyProduct() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, VerifyProductParams>({
+    mutationFn: async (params: VerifyProductParams) => {
+      if (!actor) throw new Error('Actor not available');
+      
+      try {
+        return await actor.verifyProduct(params.productId, params.verified);
+      } catch (error) {
+        const errorMessage = normalizeErrorMessage(error);
+        throw new Error(errorMessage);
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['gardenCenterProducts'] });
+      toast.success(variables.verified ? 'Product verified successfully' : 'Product unverified');
+    },
+    onError: (error) => {
+      const errorMessage = normalizeErrorMessage(error);
+      toast.error(`Failed to update verification: ${errorMessage}`);
     },
   });
 }

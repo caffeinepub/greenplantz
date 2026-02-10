@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Package } from 'lucide-react';
 import type { Product } from '../../backend';
+import { formatINR } from '../../utils/money';
 
 interface ProductCardProps {
   product: Product;
@@ -46,7 +47,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </p>
           <div className="flex items-center justify-between">
             <span className="text-lg font-semibold text-primary">
-              ${(Number(product.priceCents) / 100).toFixed(2)}
+              {formatINR(product.priceCents)}
             </span>
             {Number(product.stock) > 0 ? (
               <Badge variant="default">In Stock</Badge>

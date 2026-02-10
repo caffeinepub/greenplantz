@@ -1,6 +1,107 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend plan: no changes required for backend-only admin allowlist persistence/bootstrap fix",
-  "requirements": []
+  "title": "Centralize and display all money values in INR (₹) across the app",
+  "requirements": [
+    {
+      "id": "REQ-112",
+      "summary": "Ensure every UI location that displays money shows INR using the ₹ symbol across storefront, cart/checkout, orders, and admin/nursery management views.",
+      "acceptanceCriteria": [
+        "Product prices in ProductCard (frontend/src/components/store/ProductCard.tsx) render in INR (₹) and not in USD ($).",
+        "Product price in ProductDetailsPage (frontend/src/pages/ProductDetailsPage.tsx) renders in INR (₹) and not in USD ($).",
+        "CartPage (frontend/src/pages/CartPage.tsx) line-item prices, subtotals, and totals render in INR (₹) and not in USD ($).",
+        "CheckoutPage (frontend/src/pages/CheckoutPage.tsx) item prices and total render in INR (₹) and not in USD ($).",
+        "MyOrdersPage (frontend/src/pages/MyOrdersPage.tsx) per-item prices and order totals render in INR (₹) and not in USD ($).",
+        "Admin/Nursery views that show prices (e.g., products lists in admin nursery management, and any other admin/nursery product lists/forms that display a computed currency string) render in INR (₹) and not in USD ($)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/store/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Replace the hard-coded USD string interpolation for product price with the shared INR money-formatting utility so the card always renders ₹ with consistent formatting."
+        },
+        {
+          "path": "frontend/src/pages/ProductDetailsPage.tsx",
+          "operation": "modify",
+          "description": "Refactor the product price display to use the shared INR money-formatting utility (₹), removing the current $-prefixed manual formatting."
+        },
+        {
+          "path": "frontend/src/pages/CartPage.tsx",
+          "operation": "modify",
+          "description": "Update cart line-item unit prices, line totals, subtotal, and total to use the shared INR money-formatting utility (₹) instead of manual $ templates."
+        },
+        {
+          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "operation": "modify",
+          "description": "Update checkout item unit prices, item totals, and overall total to use the shared INR money-formatting utility (₹) consistently."
+        },
+        {
+          "path": "frontend/src/pages/MyOrdersPage.tsx",
+          "operation": "modify",
+          "description": "Update per-item price-per-item display and order total display to use the shared INR money-formatting utility (₹), removing existing $ formatting."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminProductsPage.tsx",
+          "operation": "modify",
+          "description": "Refactor any computed currency strings in product list rows (and anywhere else on the page) to use the shared INR money-formatting utility for consistent ₹ formatting."
+        },
+        {
+          "path": "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Refactor any product price displays and any computed currency strings in nursery product management views to use the shared INR money-formatting utility (ensure no $ remains)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-113",
+      "summary": "Introduce a single reusable frontend INR formatter for integer cents/paise and refactor UI to use it instead of duplicated manual formatting.",
+      "acceptanceCriteria": [
+        "A single reusable formatting helper is introduced and used wherever currency is displayed, rather than duplicating \"$\" string templates in components/pages.",
+        "Formatting uses INR with the ₹ symbol and shows two decimal places consistently for integer cents/paise inputs.",
+        "No user-facing currency strings in the app UI contain the \"$\" symbol after the change."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/money.ts",
+          "operation": "create",
+          "description": "Create a shared money-formatting utility that formats an integer cents/paise value into INR using Intl.NumberFormat (English locale) with ₹ and consistent 2-decimal output."
+        },
+        {
+          "path": "frontend/src/components/store/ProductCard.tsx",
+          "operation": "modify",
+          "description": "Import and use the shared INR formatter helper for price rendering (remove manual \"$...toFixed(2)\" usage)."
+        },
+        {
+          "path": "frontend/src/pages/ProductDetailsPage.tsx",
+          "operation": "modify",
+          "description": "Import and use the shared INR formatter helper for the product price display (remove manual \"$...toFixed(2)\" usage)."
+        },
+        {
+          "path": "frontend/src/pages/CartPage.tsx",
+          "operation": "modify",
+          "description": "Import and use the shared INR formatter helper for all displayed monetary amounts in the cart (unit prices, line totals, subtotal, total)."
+        },
+        {
+          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "operation": "modify",
+          "description": "Import and use the shared INR formatter helper for all displayed monetary amounts in checkout (per-item and total)."
+        },
+        {
+          "path": "frontend/src/pages/MyOrdersPage.tsx",
+          "operation": "modify",
+          "description": "Import and use the shared INR formatter helper for displayed monetary amounts in order history (per-item and totals)."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminProductsPage.tsx",
+          "operation": "modify",
+          "description": "Import and use the shared INR formatter helper for any displayed prices in admin product management, replacing any ad-hoc currency formatting."
+        },
+        {
+          "path": "frontend/src/pages/nursery/NurseryDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Import and use the shared INR formatter helper for any displayed prices in nursery management views, replacing any ad-hoc currency formatting."
+        }
+      ]
+    }
+  ]
 }

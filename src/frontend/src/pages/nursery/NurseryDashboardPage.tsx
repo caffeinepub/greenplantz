@@ -8,22 +8,27 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { useMyGardenCenter } from '../../hooks/nursery/useMyGardenCenter';
 import { useUpdateGardenCenter } from '../../hooks/nursery/useUpdateGardenCenter';
-import { useGardenCenterProducts, useAddGardenCenterProduct, useToggleGardenCenterProductActive } from '../../hooks/nursery/useGardenCenterProducts';
+import { useGardenCenterProducts, useAddGardenCenterProduct, useToggleGardenCenterProductActive, useUpdateProductStock } from '../../hooks/nursery/useGardenCenterProducts';
 import { useGetFullCategoryTaxonomy } from '../../hooks/storefront/useFullCategoryTaxonomy';
 import { getLeafCategories, flattenTaxonomy } from '../../utils/categoryTaxonomy';
 import RequireGardenCenterMember from '../../components/auth/RequireGardenCenterMember';
 import { toast } from 'sonner';
-import { Building2, Package, Plus, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Building2, Package, Plus, X, Image as ImageIcon, AlertCircle, CheckCircle2, Clock, Edit2, Save } from 'lucide-react';
+import { normalizeErrorMessage } from '../../utils/errorMessage';
+import { formatINR } from '../../utils/money';
 
 function NurseryDashboardContent() {
-  const { data: gardenCenter, isLoading: gcLoading } = useMyGardenCenter();
+  const { data: gardenCenter, isLoading: gcLoading, error: gcError } = useMyGardenCenter();
   const { data: taxonomy, isLoading: taxonomyLoading } = useGetFullCategoryTaxonomy();
   const { data: products, isLoading: productsLoading } = useGardenCenterProducts(gardenCenter?.id);
   const { mutate: updateGardenCenter, isPending: isUpdating } = useUpdateGardenCenter();
   const { mutate: addProduct, isPending: isAdding } = useAddGardenCenterProduct();
   const { mutate: toggleActive } = useToggleGardenCenterProductActive();
+  const { mutate: updateStock, isPending: isUpdatingStock } = useUpdateProductStock();
 
   const [gcName, setGcName] = useState('');
   const [gcLocation, setGcLocation] = useState('');
@@ -37,6 +42,10 @@ function NurseryDashboardContent() {
   const [productImageUrls, setProductImageUrls] = useState<string[]>([]);
   const [currentImageUrl, setCurrentImageUrl] = useState('');
   const [addProductDialogOpen, setAddProductDialogOpen] = useState(false);
+
+  // Stock editing state
+  const [editingStockId, setEditingStockId] = useState<bigint | null>(null);
+  const [editingStockValue, setEditingStockValue] = useState('');
 
   // Get leaf categories for product assignment
   const leafCategories = taxonomy ? getLeafCategories(taxonomy) : [];
@@ -99,7 +108,10 @@ function NurseryDashboardContent() {
   };
 
   const handleAddProduct = () => {
-    if (!gardenCenter) return;
+    if (!gardenCenter) {
+      toast.error('Garden center information is not available');
+      return;
+    }
 
     // Category is now optional - only validate required fields
     if (!productName || !productDescription || !productPrice || !productStock) {
@@ -109,6 +121,16 @@ function NurseryDashboardContent() {
 
     const priceCents = Math.round(parseFloat(productPrice) * 100);
     const stockNum = parseInt(productStock);
+
+    if (isNaN(priceCents) || priceCents <= 0) {
+      toast.error('Please enter a valid price');
+      return;
+    }
+
+    if (isNaN(stockNum) || stockNum < 0) {
+      toast.error('Please enter a valid stock quantity');
+      return;
+    }
 
     // Use categoryId 0 (Uncategorized) if no category is selected
     const categoryId = productCategoryId ? BigInt(productCategoryId) : BigInt(0);
@@ -149,32 +171,57 @@ function NurseryDashboardContent() {
     );
   };
 
+  const handleStartEditStock = (productId: bigint, currentStock: bigint) => {
+    setEditingStockId(productId);
+    setEditingStockValue(currentStock.toString());
+  };
+
+  const handleSaveStock = (productId: bigint) => {
+    const newStock = parseInt(editingStockValue);
+    if (isNaN(newStock) || newStock < 0) {
+      toast.error('Please enter a valid stock quantity');
+      return;
+    }
+
+    updateStock(
+      { productId, newStock: BigInt(newStock) },
+      {
+        onSuccess: () => {
+          setEditingStockId(null);
+          setEditingStockValue('');
+        },
+      }
+    );
+  };
+
+  const handleCancelEditStock = () => {
+    setEditingStockId(null);
+    setEditingStockValue('');
+  };
+
   if (gcLoading) {
     return (
       <div className="py-8">
-        <div className="container-custom">
-          <Skeleton className="h-12 w-64 mb-8" />
-          <div className="space-y-4">
-            <Skeleton className="h-32" />
-            <Skeleton className="h-64" />
+        <div className="container-custom max-w-6xl">
+          <Skeleton className="h-10 w-64 mb-8" />
+          <div className="grid lg:grid-cols-2 gap-8">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
           </div>
         </div>
       </div>
     );
   }
 
-  if (!gardenCenter) {
+  if (gcError || !gardenCenter) {
     return (
-      <div className="py-8">
-        <div className="container-custom">
-          <Card>
-            <CardHeader>
-              <CardTitle>No Garden Center Found</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">You are not associated with any garden center.</p>
-            </CardContent>
-          </Card>
+      <div className="py-16">
+        <div className="container-custom text-center">
+          <AlertCircle className="h-16 w-16 mx-auto mb-4 text-destructive" />
+          <h2 className="text-2xl font-bold mb-2">Error Loading Garden Center</h2>
+          <p className="text-muted-foreground mb-4">
+            {gcError ? normalizeErrorMessage(gcError) : 'Garden center not found'}
+          </p>
         </div>
       </div>
     );
@@ -185,78 +232,115 @@ function NurseryDashboardContent() {
       <div className="container-custom max-w-6xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Nursery Dashboard</h1>
-          <p className="text-muted-foreground">Manage your garden center details and products</p>
+          <p className="text-muted-foreground">Manage your garden center and products</p>
         </div>
 
-        <div className="space-y-8">
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
           {/* Garden Center Details */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                <CardTitle>Garden Center Details</CardTitle>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Garden Center Details
+                </CardTitle>
+                {!editingGc ? (
+                  <Button variant="outline" size="sm" onClick={handleEditGardenCenter}>
+                    <Edit2 className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={handleSaveGardenCenter} disabled={isUpdating}>
+                    <Save className="h-4 w-4 mr-1" />
+                    {isUpdating ? 'Saving...' : 'Save'}
+                  </Button>
+                )}
               </div>
-              {!editingGc && (
-                <Button onClick={handleEditGardenCenter} variant="outline" size="sm">
-                  Edit
-                </Button>
-              )}
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               {editingGc ? (
-                <div className="space-y-4">
+                <>
                   <div>
-                    <Label htmlFor="gcName">Name</Label>
+                    <Label htmlFor="gc-name">Name</Label>
                     <Input
-                      id="gcName"
+                      id="gc-name"
                       value={gcName}
                       onChange={(e) => setGcName(e.target.value)}
                       placeholder="Garden center name"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="gcLocation">Location</Label>
+                    <Label htmlFor="gc-location">Location</Label>
                     <Input
-                      id="gcLocation"
+                      id="gc-location"
                       value={gcLocation}
                       onChange={(e) => setGcLocation(e.target.value)}
-                      placeholder="Location"
+                      placeholder="City, State"
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleSaveGardenCenter} disabled={isUpdating}>
-                      {isUpdating ? 'Saving...' : 'Save'}
-                    </Button>
-                    <Button onClick={() => setEditingGc(false)} variant="outline">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
+                </>
               ) : (
-                <div className="space-y-2">
+                <>
                   <div>
-                    <span className="text-sm text-muted-foreground">Name:</span>
+                    <Label className="text-muted-foreground">Name</Label>
                     <p className="font-medium">{gardenCenter.name}</p>
                   </div>
                   <div>
-                    <span className="text-sm text-muted-foreground">Location:</span>
+                    <Label className="text-muted-foreground">Location</Label>
                     <p className="font-medium">{gardenCenter.location}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Team Members</Label>
+                    <p className="font-medium">{gardenCenter.teamMembers.length}</p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Product Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {productsLoading ? (
+                <Skeleton className="h-20 w-full" />
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Total Products</span>
+                    <span className="text-2xl font-bold">{products?.length || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Active Products</span>
+                    <span className="text-2xl font-bold">
+                      {products?.filter((p) => p.active).length || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Verified Products</span>
+                    <span className="text-2xl font-bold">
+                      {products?.filter((p) => p.verified).length || 0}
+                    </span>
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
+        </div>
 
-          {/* Products Management */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-primary" />
-                <CardTitle>Products</CardTitle>
-              </div>
+        {/* Products Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Products</CardTitle>
               <Dialog open={addProductDialogOpen} onOpenChange={setAddProductDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm">
+                  <Button>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Product
                   </Button>
@@ -267,52 +351,42 @@ function NurseryDashboardContent() {
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div>
-                      <Label htmlFor="productName">Product Name *</Label>
+                      <Label htmlFor="product-name">Product Name *</Label>
                       <Input
-                        id="productName"
+                        id="product-name"
                         value={productName}
                         onChange={(e) => setProductName(e.target.value)}
-                        placeholder="Enter product name"
+                        placeholder="e.g., Monstera Deliciosa"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="productDescription">Description *</Label>
+                      <Label htmlFor="product-description">Description *</Label>
                       <Textarea
-                        id="productDescription"
+                        id="product-description"
                         value={productDescription}
                         onChange={(e) => setProductDescription(e.target.value)}
-                        placeholder="Enter product description"
+                        placeholder="Product description..."
                         rows={3}
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="productCategory">Category (Optional)</Label>
+                      <Label htmlFor="product-category">Category (Optional)</Label>
                       {taxonomyLoading ? (
                         <Skeleton className="h-10 w-full" />
-                      ) : !taxonomy || taxonomy.length === 0 ? (
-                        <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
-                          <AlertCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <p className="text-sm text-muted-foreground">
-                            Categories are not available right now. Your product will be added as Uncategorized.
-                          </p>
-                        </div>
                       ) : (
                         <Select value={productCategoryId} onValueChange={setProductCategoryId}>
-                          <SelectTrigger id="productCategory">
-                            <SelectValue placeholder="Select a category (optional)" />
+                          <SelectTrigger id="product-category">
+                            <SelectValue placeholder="Select category (optional)" />
                           </SelectTrigger>
                           <SelectContent>
                             {categoryGroups.map((group) => (
                               <SelectGroup key={group.parent.id.toString()}>
                                 <SelectLabel>{group.parent.name}</SelectLabel>
-                                {group.children.map((item) => (
-                                  <SelectItem
-                                    key={item.category.id.toString()}
-                                    value={item.category.id.toString()}
-                                  >
-                                    {item.indentLabel}
+                                {group.children.map((cat) => (
+                                  <SelectItem key={cat.category.id.toString()} value={cat.category.id.toString()}>
+                                    {cat.category.name}
                                   </SelectItem>
                                 ))}
                               </SelectGroup>
@@ -324,23 +398,21 @@ function NurseryDashboardContent() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="productPrice">Price (₹) *</Label>
+                        <Label htmlFor="product-price">Price (₹) *</Label>
                         <Input
-                          id="productPrice"
+                          id="product-price"
                           type="number"
                           step="0.01"
-                          min="0"
                           value={productPrice}
                           onChange={(e) => setProductPrice(e.target.value)}
                           placeholder="0.00"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="productStock">Stock *</Label>
+                        <Label htmlFor="product-stock">Stock *</Label>
                         <Input
-                          id="productStock"
+                          id="product-stock"
                           type="number"
-                          min="0"
                           value={productStock}
                           onChange={(e) => setProductStock(e.target.value)}
                           placeholder="0"
@@ -349,143 +421,161 @@ function NurseryDashboardContent() {
                     </div>
 
                     <div>
-                      <Label>Product Images (Optional)</Label>
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Input
-                            value={currentImageUrl}
-                            onChange={(e) => setCurrentImageUrl(e.target.value)}
-                            placeholder="Enter image URL"
-                          />
-                          <Button
-                            type="button"
-                            onClick={handleAddImageUrl}
-                            variant="outline"
-                            size="sm"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                        {productImageUrls.length > 0 && (
-                          <div className="space-y-2">
-                            {productImageUrls.map((url, index) => (
-                              <div key={index} className="flex items-center gap-2 p-2 border rounded-md">
-                                <div className="w-12 h-12 flex-shrink-0 bg-muted rounded overflow-hidden">
-                                  <img
-                                    src={url}
-                                    alt={`Preview ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = 'none';
-                                      e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="h-6 w-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
-                                    }}
-                                  />
-                                </div>
-                                <span className="flex-1 text-sm truncate">{url}</span>
-                                <Button
-                                  type="button"
-                                  onClick={() => handleRemoveImageUrl(index)}
-                                  variant="ghost"
-                                  size="sm"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      <Label>Product Images (Optional, max 5)</Label>
+                      <div className="flex gap-2 mb-2">
+                        <Input
+                          value={currentImageUrl}
+                          onChange={(e) => setCurrentImageUrl(e.target.value)}
+                          placeholder="Enter image URL"
+                        />
+                        <Button type="button" onClick={handleAddImageUrl} variant="outline">
+                          <Plus className="h-4 w-4" />
+                        </Button>
                       </div>
+                      {productImageUrls.length > 0 && (
+                        <div className="space-y-2">
+                          {productImageUrls.map((url, index) => (
+                            <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                              <ImageIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="text-sm truncate flex-1">{url}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveImageUrl(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setAddProductDialogOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button onClick={handleAddProduct} disabled={isAdding}>
-                        {isAdding ? 'Adding...' : 'Add Product'}
-                      </Button>
-                    </div>
+                    <Button onClick={handleAddProduct} disabled={isAdding} className="w-full">
+                      {isAdding ? 'Adding...' : 'Add Product'}
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
-            </CardHeader>
-            <CardContent>
-              {productsLoading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-24" />
-                  ))}
-                </div>
-              ) : !products || products.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No products yet. Add your first product to get started.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {products.map((product) => (
-                    <div
-                      key={product.id.toString()}
-                      className="flex items-start gap-4 p-4 border rounded-lg"
-                    >
-                      <div className="w-16 h-16 flex-shrink-0 bg-muted rounded overflow-hidden">
-                        {product.imageUrls.length > 0 ? (
-                          <img
-                            src={product.imageUrls[0]}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              e.currentTarget.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center"><svg class="h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
-                            }}
-                          />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {productsLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-24 w-full" />
+                ))}
+              </div>
+            ) : products && products.length > 0 ? (
+              <div className="space-y-4">
+                {products.map((product) => (
+                  <div key={product.id.toString()} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold">{product.name}</h4>
+                          {product.verified ? (
+                            <Badge variant="default" className="gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Verified
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="gap-1">
+                              <Clock className="h-3 w-3" />
+                              Unverified
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {product.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <Label htmlFor={`active-${product.id}`} className="text-sm">
+                          Active
+                        </Label>
+                        <Switch
+                          id={`active-${product.id}`}
+                          checked={product.active}
+                          onCheckedChange={() => handleToggleActive(product.id, product.active)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                      <span className="font-mono">SKU: {product.sku}</span>
+                      <span>{formatINR(product.priceCents)}</span>
+                      <div className="flex items-center gap-2">
+                        <span>Stock:</span>
+                        {editingStockId === product.id ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              type="number"
+                              value={editingStockValue}
+                              onChange={(e) => setEditingStockValue(e.target.value)}
+                              className="h-7 w-20 text-sm"
+                              disabled={!product.verified}
+                            />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2"
+                              onClick={() => handleSaveStock(product.id)}
+                              disabled={isUpdatingStock || !product.verified}
+                            >
+                              <Save className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2"
+                              onClick={handleCancelEditStock}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                          <div className="flex items-center gap-1">
+                            <span>{product.stock.toString()}</span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2"
+                              onClick={() => handleStartEditStock(product.id, product.stock)}
+                              disabled={!product.verified}
+                              title={!product.verified ? 'Product must be verified before updating stock' : 'Edit stock'}
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         )}
                       </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold mb-1">{product.name}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                          {product.description}
-                        </p>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                          <span>
-                            <span className="text-muted-foreground">Price:</span> ₹
-                            {(Number(product.priceCents) / 100).toFixed(2)}
-                          </span>
-                          <span>
-                            <span className="text-muted-foreground">Stock:</span> {product.stock.toString()}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor={`active-${product.id}`} className="text-sm">
-                            {product.active ? 'Active' : 'Inactive'}
-                          </Label>
-                          <Switch
-                            id={`active-${product.id}`}
-                            checked={product.active}
-                            onCheckedChange={() => handleToggleActive(product.id, product.active)}
-                          />
-                        </div>
-                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+
+                    {!product.verified && (
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="text-sm">
+                          This product must be verified by the GreenPlantz team before you can update stock quantities.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-20" />
+                <p className="text-muted-foreground mb-4">No products yet</p>
+                <Button onClick={() => setAddProductDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Product
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

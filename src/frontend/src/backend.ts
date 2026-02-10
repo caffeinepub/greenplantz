@@ -92,7 +92,9 @@ export class ExternalBlob {
 export type GardenCenterId = bigint;
 export interface Product {
     id: ProductId;
+    sku: string;
     categoryId: CategoryId;
+    verified: boolean;
     active: boolean;
     imageUrls: Array<string>;
     name: string;
@@ -102,16 +104,15 @@ export interface Product {
     stock: bigint;
     priceCents: bigint;
 }
+export interface CategoryWithSubcategories {
+    category: Category;
+    subcategories: Array<CategoryWithSubcategories>;
+}
 export interface Category {
     id: CategoryId;
     name: string;
     description: string;
     parentCategoryId?: CategoryId;
-}
-export interface CallerRole {
-    gardenCenterMemberships: Array<GardenCenterId>;
-    isCustomer: boolean;
-    isPlatformAdmin: boolean;
 }
 export interface FolderListing {
     rootDirectories: Array<string>;
@@ -121,14 +122,27 @@ export interface FolderListing {
     frontendDirectories: Array<string>;
     deploymentDirectories: Array<string>;
 }
-export type CategoryId = bigint;
-export type ProductId = bigint;
-export interface CategoryWithSubcategories {
-    category: Category;
-    subcategories: Array<CategoryWithSubcategories>;
+export interface CallerRole {
+    gardenCenterMemberships: Array<GardenCenterId>;
+    isCustomer: boolean;
+    isPlatformAdmin: boolean;
 }
+export interface TeamMember {
+    principal: Principal;
+    enabled: boolean;
+}
+export type ProductId = bigint;
+export type CategoryId = bigint;
 export interface UserProfile {
     name: string;
+}
+export interface GardenCenter {
+    id: bigint;
+    name: string;
+    createdAt: bigint;
+    teamMembers: Array<TeamMember>;
+    enabled: boolean;
+    location: string;
 }
 export enum UserRole {
     admin = "admin",
@@ -152,6 +166,7 @@ export interface backendInterface {
     getCategoryByName(name: string): Promise<Category | null>;
     getCategoryPath(categoryId: CategoryId): Promise<Array<Category>>;
     getFullCategoryTaxonomy(): Promise<Array<CategoryWithSubcategories>>;
+    getGardenCenterById(gardenCenterId: GardenCenterId): Promise<GardenCenter>;
     getParsedFolderListing(): Promise<FolderListing>;
     getProduct(productId: ProductId): Promise<Product>;
     getProductsForCategory(categoryId: CategoryId): Promise<Array<Product>>;
@@ -166,7 +181,9 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     seedDefaultCategories(): Promise<void>;
     updateGardenCenter(gardenCenterId: GardenCenterId, name: string, location: string): Promise<void>;
+    updateProductStock(productId: ProductId, newStock: bigint): Promise<void>;
     upsertProductStock(productId: ProductId, gardenCenterId: GardenCenterId, newStock: bigint): Promise<void>;
+    verifyProduct(productId: ProductId, verified: boolean): Promise<void>;
 }
 import type { Category as _Category, CategoryId as _CategoryId, CategoryWithSubcategories as _CategoryWithSubcategories, GardenCenterId as _GardenCenterId, Product as _Product, ProductId as _ProductId, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -395,6 +412,20 @@ export class Backend implements backendInterface {
             return from_candid_vec_n15(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getGardenCenterById(arg0: GardenCenterId): Promise<GardenCenter> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getGardenCenterById(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getGardenCenterById(arg0);
+            return result;
+        }
+    }
     async getParsedFolderListing(): Promise<FolderListing> {
         if (this.processError) {
             try {
@@ -591,6 +622,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async updateProductStock(arg0: ProductId, arg1: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateProductStock(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateProductStock(arg0, arg1);
+            return result;
+        }
+    }
     async upsertProductStock(arg0: ProductId, arg1: GardenCenterId, arg2: bigint): Promise<void> {
         if (this.processError) {
             try {
@@ -602,6 +647,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.upsertProductStock(arg0, arg1, arg2);
+            return result;
+        }
+    }
+    async verifyProduct(arg0: ProductId, arg1: boolean): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.verifyProduct(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.verifyProduct(arg0, arg1);
             return result;
         }
     }
@@ -659,7 +718,9 @@ function from_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }
 function from_candid_record_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _ProductId;
+    sku: string;
     categoryId: _CategoryId;
+    verified: boolean;
     active: boolean;
     imageUrls: Array<string>;
     name: string;
@@ -670,7 +731,9 @@ function from_candid_record_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint
     priceCents: bigint;
 }): {
     id: ProductId;
+    sku: string;
     categoryId: CategoryId;
+    verified: boolean;
     active: boolean;
     imageUrls: Array<string>;
     name: string;
@@ -682,7 +745,9 @@ function from_candid_record_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint
 } {
     return {
         id: value.id,
+        sku: value.sku,
         categoryId: value.categoryId,
+        verified: value.verified,
         active: value.active,
         imageUrls: value.imageUrls,
         name: value.name,

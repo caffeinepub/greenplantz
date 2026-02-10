@@ -19,7 +19,9 @@ export const UserRole = IDL.Variant({
 });
 export const Product = IDL.Record({
   'id' : ProductId,
+  'sku' : IDL.Text,
   'categoryId' : CategoryId,
+  'verified' : IDL.Bool,
   'active' : IDL.Bool,
   'imageUrls' : IDL.Vec(IDL.Text),
   'name' : IDL.Text,
@@ -47,6 +49,18 @@ CategoryWithSubcategories.fill(
     'subcategories' : IDL.Vec(CategoryWithSubcategories),
   })
 );
+export const TeamMember = IDL.Record({
+  'principal' : IDL.Principal,
+  'enabled' : IDL.Bool,
+});
+export const GardenCenter = IDL.Record({
+  'id' : IDL.Nat,
+  'name' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'teamMembers' : IDL.Vec(TeamMember),
+  'enabled' : IDL.Bool,
+  'location' : IDL.Text,
+});
 export const FolderListing = IDL.Record({
   'rootDirectories' : IDL.Vec(IDL.Text),
   'documentationDirectories' : IDL.Vec(IDL.Text),
@@ -97,6 +111,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(CategoryWithSubcategories)],
       ['query'],
     ),
+  'getGardenCenterById' : IDL.Func([GardenCenterId], [GardenCenter], ['query']),
   'getParsedFolderListing' : IDL.Func([], [FolderListing], []),
   'getProduct' : IDL.Func([ProductId], [Product], ['query']),
   'getProductsForCategory' : IDL.Func(
@@ -123,7 +138,9 @@ export const idlService = IDL.Service({
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'seedDefaultCategories' : IDL.Func([], [], []),
   'updateGardenCenter' : IDL.Func([GardenCenterId, IDL.Text, IDL.Text], [], []),
+  'updateProductStock' : IDL.Func([ProductId, IDL.Nat], [], []),
   'upsertProductStock' : IDL.Func([ProductId, GardenCenterId, IDL.Nat], [], []),
+  'verifyProduct' : IDL.Func([ProductId, IDL.Bool], [], []),
 });
 
 export const idlInitArgs = [];
@@ -140,7 +157,9 @@ export const idlFactory = ({ IDL }) => {
   });
   const Product = IDL.Record({
     'id' : ProductId,
+    'sku' : IDL.Text,
     'categoryId' : CategoryId,
+    'verified' : IDL.Bool,
     'active' : IDL.Bool,
     'imageUrls' : IDL.Vec(IDL.Text),
     'name' : IDL.Text,
@@ -168,6 +187,18 @@ export const idlFactory = ({ IDL }) => {
       'subcategories' : IDL.Vec(CategoryWithSubcategories),
     })
   );
+  const TeamMember = IDL.Record({
+    'principal' : IDL.Principal,
+    'enabled' : IDL.Bool,
+  });
+  const GardenCenter = IDL.Record({
+    'id' : IDL.Nat,
+    'name' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'teamMembers' : IDL.Vec(TeamMember),
+    'enabled' : IDL.Bool,
+    'location' : IDL.Text,
+  });
   const FolderListing = IDL.Record({
     'rootDirectories' : IDL.Vec(IDL.Text),
     'documentationDirectories' : IDL.Vec(IDL.Text),
@@ -218,6 +249,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(CategoryWithSubcategories)],
         ['query'],
       ),
+    'getGardenCenterById' : IDL.Func(
+        [GardenCenterId],
+        [GardenCenter],
+        ['query'],
+      ),
     'getParsedFolderListing' : IDL.Func([], [FolderListing], []),
     'getProduct' : IDL.Func([ProductId], [Product], ['query']),
     'getProductsForCategory' : IDL.Func(
@@ -248,11 +284,13 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'updateProductStock' : IDL.Func([ProductId, IDL.Nat], [], []),
     'upsertProductStock' : IDL.Func(
         [ProductId, GardenCenterId, IDL.Nat],
         [],
         [],
       ),
+    'verifyProduct' : IDL.Func([ProductId, IDL.Bool], [], []),
   });
 };
 
